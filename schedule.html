@@ -3,67 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life-Hub Schedule PRO</title>
+    <title>Life-Hub Schedule ARCHIVE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .active-day { background-color: #2563eb !important; color: white !important; transform: scale(1.05); font-weight: 900; }
-        .game-tag { background: linear-gradient(90deg, #ef4444, #f97316); }
-        input, select { height: 50px; font-size: 14px !important; }
+        .has-regular::after { content: ''; display: block; width: 4px; height: 4px; background: #2563eb; margin: 2px auto; border-radius: 50%; }
+        .has-game::after { content: ''; display: block; width: 4px; height: 4px; background: #ef4444; margin: 2px auto; border-radius: 50%; }
         .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; }
+        input, select { height: 50px; font-size: 14px !important; }
     </style>
 </head>
-<body class="bg-gray-100 pb-32 text-left">
-
-    <div id="urgentAlert" class="hidden bg-orange-500 text-white p-4 text-center font-black text-xs uppercase tracking-widest sticky top-0 z-50 shadow-lg"></div>
+<body class="bg-gray-100 pb-32">
 
     <div class="bg-white shadow-xl px-5 pt-6 pb-4 rounded-b-[2.5rem]">
-        <h1 class="text-xl font-[900] italic tracking-tighter text-blue-900 uppercase mb-4 text-center">Life-Hub <span class="text-blue-500">PRO SCHEDULE</span></h1>
+        <h1 class="text-xl font-[900] italic tracking-tighter text-blue-900 uppercase mb-4 text-center">Life-Hub <span class="text-blue-500">ARCHIVE</span></h1>
         
-        <div class="flex justify-between gap-1 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="setDay(1)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="1">周一</button>
-            <button onclick="setDay(2)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="2">周二</button>
-            <button onclick="setDay(3)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="3">周三</button>
-            <button onclick="setDay(4)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="4">周四</button>
-            <button onclick="setDay(5)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="5">周五</button>
-            <button onclick="setDay(6)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="6">周六</button>
-            <button onclick="setDay(0)" class="day-btn flex-1 min-w-[45px] py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="0">周日</button>
+        <div class="relative mb-6">
+            <label class="text-[10px] font-black text-blue-600 ml-1 uppercase">课程快速索引 / 档案检索</label>
+            <input type="text" id="courseSearch" list="courseHistory" placeholder="输入课程名称 (如: 篮球)" 
+                   class="w-full p-4 border-2 border-blue-100 rounded-2xl bg-blue-50 text-base font-black outline-none focus:border-blue-500"
+                   onchange="loadCourseArchive(this.value)">
+            <datalist id="courseHistory"></datalist>
+        </div>
+
+        <div class="mb-4 overflow-hidden">
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 uppercase">
+                <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
+            </div>
+            <div id="calendarDates" class="grid grid-cols-7 gap-1 mt-2"></div>
+        </div>
+
+        <div class="flex justify-between gap-1 overflow-x-auto no-scrollbar">
+            <button onclick="setDay(1)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="1">周一</button>
+            <button onclick="setDay(2)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="2">周二</button>
+            <button onclick="setDay(3)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="3">周三</button>
+            <button onclick="setDay(4)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="4">周四</button>
+            <button onclick="setDay(5)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="5">周五</button>
+            <button onclick="setDay(6)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="6">周六</button>
+            <button onclick="setDay(0)" class="day-btn flex-1 py-3 bg-gray-50 rounded-xl text-[10px] font-black transition-all" data-day="0">周日</button>
         </div>
     </div>
 
-    <div class="mx-5 mt-6 p-6 bg-white rounded-[2.5rem] shadow-2xl space-y-4 border border-gray-50">
+    <div class="mx-5 mt-6 p-6 bg-white rounded-[2.5rem] shadow-2xl space-y-4">
         <div class="flex border-b border-gray-100 mb-2">
             <button id="tabRegular" onclick="switchMode('regular')" class="flex-1 py-2 text-[10px] font-black tab-active">常规周课</button>
-            <button id="tabSpecial" onclick="switchMode('special')" class="flex-1 py-2 text-[10px] font-black text-gray-400">比赛/变动</button>
+            <button id="tabSpecial" onclick="switchMode('special')" class="flex-1 py-2 text-[10px] font-black text-gray-400">比赛变动</button>
         </div>
 
-        <input type="text" id="courseName" placeholder="课程/比赛名称" class="w-full p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none focus:border-blue-500">
-
         <div id="dateArea" class="hidden">
-            <label class="text-[9px] font-black text-gray-400 ml-1 uppercase">特定日期</label>
             <input type="date" id="specialDate" class="w-full p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-            <div class="space-y-1">
-                <label class="text-[9px] font-black text-gray-400 ml-1 uppercase">开始</label>
-                <input type="time" id="startTime" class="w-full p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
-            </div>
-            <div class="space-y-1">
-                <label class="text-[9px] font-black text-gray-400 ml-1 uppercase">结束</label>
-                <input type="time" id="endTime" class="w-full p-4 border-2 border-gray-100 rounded-xl bg-gray-50 text-sm font-black outline-none">
-            </div>
+            <input type="time" id="startTime" class="p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
+            <input type="time" id="endTime" class="p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
         </div>
 
         <div id="regularInfo" class="grid grid-cols-2 gap-3">
             <input type="number" id="totalSessions" placeholder="总课时" class="p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
-            <input type="text" id="dateRange" placeholder="如: 1月-6月" class="p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
+            <input type="text" id="dateRange" placeholder="几月到几月" class="p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
         </div>
 
-        <input type="text" id="location" placeholder="地点 (e.g. Center Pool)" class="w-full p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
+        <input type="text" id="location" placeholder="地点" class="w-full p-4 border-2 border-gray-50 rounded-xl bg-gray-50 text-sm font-black outline-none">
 
-        <button onclick="saveEntry()" class="w-full bg-blue-600 text-white h-16 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">Commit to Ledger</button>
+        <button onclick="saveEntry()" class="w-full bg-blue-600 text-white h-16 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">Commit Course</button>
     </div>
 
     <div id="scheduleList" class="px-5 mt-6 space-y-4 pb-12"></div>
@@ -79,7 +84,7 @@
     </div>
 
     <script>
-        let entries = JSON.parse(localStorage.getItem('lh_schedule_pro_v1') || '[]');
+        let entries = JSON.parse(localStorage.getItem('lh_schedule_pro_v2') || '[]');
         let currentDay = new Date().getDay();
         let currentMode = 'regular';
 
@@ -91,123 +96,114 @@
             document.getElementById('regularInfo').classList.toggle('hidden', mode === 'special');
         }
 
-        function setDay(day) {
-            currentDay = day;
-            renderEntries();
-        }
+        function setDay(day) { currentDay = day; render(); }
 
         function saveEntry() {
+            const name = document.getElementById('courseSearch').value;
+            if(!name) return alert("经理，请先输入课程名称作为索引！");
+            
             const entry = {
                 id: Date.now(),
                 mode: currentMode,
-                name: document.getElementById('courseName').value,
+                name: name,
                 start: document.getElementById('startTime').value,
                 end: document.getElementById('endTime').value,
                 loc: document.getElementById('location').value,
                 day: currentDay,
-                date: document.getElementById('specialDate').value,
+                date: document.getElementById('specialDate').value || new Date().toISOString().split('T')[0],
                 total: document.getElementById('totalSessions').value,
                 range: document.getElementById('dateRange').value
             };
 
-            if(!entry.name || !entry.start) return alert("经理，核心信息不能为空！");
             entries.push(entry);
-            localStorage.setItem('lh_schedule_pro_v1', JSON.stringify(entries));
-            renderEntries();
+            localStorage.setItem('lh_schedule_pro_v2', JSON.stringify(entries));
+            render();
         }
 
-        function renderEntries() {
+        // 经理要求的：调档功能
+        function loadCourseArchive(courseName) {
+            const archive = entries.find(e => e.name === courseName && e.mode === 'regular');
+            if(archive) {
+                document.getElementById('startTime').value = archive.start;
+                document.getElementById('endTime').value = archive.end;
+                document.getElementById('location').value = archive.loc;
+                document.getElementById('totalSessions').value = archive.total;
+                document.getElementById('dateRange').value = archive.range;
+                currentDay = archive.day;
+                render();
+            }
+        }
+
+        function render() {
             const listDiv = document.getElementById('scheduleList');
-            const btns = document.querySelectorAll('.day-btn');
+            const historyList = document.getElementById('courseHistory');
+            const datesDiv = document.getElementById('calendarDates');
             listDiv.innerHTML = '';
-            
-            btns.forEach(btn => btn.classList.toggle('active-day', parseInt(btn.dataset.day) === currentDay));
+            historyList.innerHTML = '';
+            datesDiv.innerHTML = '';
 
+            // 更新历史下拉菜单
+            const names = [...new Set(entries.map(e => e.name))];
+            names.forEach(n => historyList.innerHTML += `<option value="${n}">`);
+
+            // 更新迷你日历 (显示本周/本月示意)
             const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const nowTime = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            for(let i=-2; i<5; i++) {
+                let d = new Date(); d.setDate(now.getDate() + i);
+                let dStr = d.toISOString().split('T')[0];
+                let hasReg = entries.some(e => e.mode === 'regular' && e.day === d.getDay());
+                let hasGame = entries.some(e => e.mode === 'special' && e.date === dStr);
+                
+                let dotClass = "";
+                if(hasGame) dotClass = "has-game";
+                else if(hasReg) dotClass = "has-regular";
 
-            // 筛选：如果是常规课看周几，如果是比赛看日期是否是今天（或是关联显示）
-            let todays = entries.filter(e => {
-                if(e.mode === 'regular') return e.day === currentDay;
-                if(e.mode === 'special') return e.date === todayStr || (new Date(e.date).getDay() === currentDay);
-                return false;
+                datesDiv.innerHTML += `
+                    <div class="text-[12px] font-black p-2 ${d.getDate() === now.getDate() ? 'bg-blue-100 rounded-lg text-blue-600' : 'text-gray-900'} ${dotClass}">
+                        ${d.getDate()}
+                    </div>`;
+            }
+
+            // 更新周按钮
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.toggle('active-day', parseInt(btn.dataset.day) === currentDay));
+
+            // 更新列表
+            const todayStr = now.toISOString().split('T')[0];
+            let filtered = entries.filter(e => {
+                const search = document.getElementById('courseSearch').value;
+                if(search) return e.name === search; // 如果搜了，就显示该课所有档案
+                return e.day === currentDay || e.date === todayStr; // 否则显示今日/当周
             }).sort((a,b) => a.start.localeCompare(b.start));
 
-            todays.forEach(e => {
-                const isGame = e.mode === 'special';
-                const isOngoing = nowTime >= e.start && nowTime <= e.end;
-                const isPast = nowTime > e.end;
-
-                // 查找该课程相关的比赛/变动
-                let related = entries.filter(r => r.mode === 'special' && r.name.includes(e.name) && r.id !== e.id);
-
+            filtered.forEach(e => {
                 listDiv.innerHTML += `
-                    <div class="bg-white p-6 rounded-[2rem] shadow-xl border-l-8 ${isGame ? 'border-orange-500' : 'border-blue-500'} ${isPast ? 'opacity-40' : ''} ${isOngoing ? 'ring-4 ring-blue-100' : ''}">
+                    <div class="bg-white p-6 rounded-[2rem] shadow-xl border-l-8 ${e.mode === 'special' ? 'border-red-500' : 'border-blue-500'}">
                         <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-lg font-black text-gray-900">${e.name}</span>
-                                    ${isGame ? '<span class="game-tag text-[8px] text-white px-2 py-0.5 rounded-full font-black">GAME/EVENT</span>' : ''}
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-lg font-[900] text-gray-900 uppercase">${e.name}</span>
+                                    <span class="${e.mode === 'special' ? 'bg-red-500' : 'bg-blue-600'} text-white text-[8px] px-2 py-0.5 rounded-full font-black">${e.mode === 'special' ? 'GAME' : 'REGULAR'}</span>
                                 </div>
-                                <p class="text-sm font-black text-blue-600">${e.start} — ${e.end}</p>
+                                <p class="text-[11px] font-black text-gray-900">🗓 ${e.mode === 'special' ? e.date : '每周' + ['日','一','二','三','四','五','六'][e.day]} | ${e.start} - ${e.end}</p>
                                 <p class="text-[10px] font-bold text-gray-400 mt-2">📍 ${e.loc}</p>
-                                ${e.range ? `<p class="text-[9px] font-black text-gray-300 mt-1 uppercase">🗓周期: ${e.range} | ${e.total}节</p>` : ''}
+                                ${e.total ? `<div class="mt-3 flex gap-2"><span class="bg-gray-100 text-[9px] font-black px-3 py-1 rounded-lg uppercase">Total: ${e.total}节</span><span class="bg-gray-100 text-[9px] font-black px-3 py-1 rounded-lg uppercase">Range: ${e.range}</span></div>` : ''}
                             </div>
-                            <button onclick="deleteEntry(${e.id})" class="text-gray-200 text-lg">✕</button>
+                            <button onclick="deleteEntry(${e.id})" class="text-gray-200">✕</button>
                         </div>
-                        
-                        ${related.length > 0 ? `
-                        <div class="mt-4 pt-3 border-t border-dashed border-gray-100">
-                            <p class="text-[9px] font-black text-orange-400 mb-2 uppercase">关联变动/比赛:</p>
-                            ${related.map(r => `
-                                <div class="flex justify-between text-[9px] font-bold text-gray-500 bg-gray-50 p-2 rounded-lg mb-1">
-                                    <span>📅 ${r.date}</span>
-                                    <span>${r.start} @ ${r.loc}</span>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
                     </div>
                 `;
             });
-            updateUrgentAlert();
         }
 
         function deleteEntry(id) {
-            if(confirm("经理，确认删除此项？")) {
+            if(confirm("确定删除此项档案？")) {
                 entries = entries.filter(e => e.id !== id);
-                localStorage.setItem('lh_schedule_pro_v1', JSON.stringify(entries));
-                renderEntries();
+                localStorage.setItem('lh_schedule_pro_v2', JSON.stringify(entries));
+                render();
             }
         }
 
-        function updateUrgentAlert() {
-            const bar = document.getElementById('urgentAlert');
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            
-            let upcoming = entries.filter(e => {
-                if(e.mode === 'special' && e.date === todayStr) return true;
-                if(e.mode === 'regular' && e.day === now.getDay()) return true;
-                return false;
-            });
-
-            let found = false;
-            for(let e of upcoming) {
-                let [h, m] = e.start.split(':').map(Number);
-                let start = new Date(); start.setHours(h, m, 0);
-                let diff = (start - now) / 1000 / 60;
-                if(diff > 0 && diff <= 45) {
-                    bar.innerHTML = `⚠️ 紧急: ${e.name} 将在 ${Math.floor(diff)} 分钟后开始 (${e.loc})`;
-                    bar.classList.remove('hidden');
-                    found = true; break;
-                }
-            }
-            if(!found) bar.classList.add('hidden');
-        }
-
-        setInterval(renderEntries, 60000);
-        renderEntries();
+        render();
     </script>
 </body>
 </html>
