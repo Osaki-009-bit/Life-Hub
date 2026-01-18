@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life-Hub Analyst MAX v4.0</title>
+    <title>Life-Hub Analyst MAX v4.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -122,7 +122,6 @@
         <datalist id="marketPresets">
             <option value="Costco"><option value="Walmart"><option value="Real Canadian Superstore"><option value="No Frills"><option value="T&T Supermarket">
             <option value="Save-On-Foods"><option value="FreshCo"><option value="Safeway"><option value="Sobeys"><option value="Loblaws">
-            <option value="PriceSmart Foods"><option value="Sungiven Foods"><option value="H-Mart">
         </datalist>
 
         <button onclick="submitData()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Entry</button>
@@ -132,7 +131,7 @@
 
     <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 flex justify-around p-6 z-40">
         <a href="price.html" class="flex flex-col items-center text-blue-600">
-            <div class="w-2 h-2 bg-blue-600 rounded-full mb-1"></div>
+            <div class="w-2 h-2 bg-blue-600 rounded-full mb-1 shadow-lg shadow-blue-300"></div>
             <span class="text-[10px] font-black uppercase tracking-widest">Analytics</span>
         </a>
         <a href="schedule.html" class="flex flex-col items-center text-gray-400">
@@ -141,14 +140,12 @@
     </div>
 
     <script>
-        // 词库配置
         const subData = {
             "肉类": ["猪肉", "牛肉", "羊肉", "鸡肉", "鱼类/海鲜", "排骨", "肉碎"],
             "水果": ["苹果", "香蕉", "橙子", "蓝莓", "葡萄", "草莓", "牛油果"],
             "蔬菜": ["西红柿", "土豆", "生菜", "西兰花", "黄瓜", "洋葱", "青椒"],
             "奶蛋": ["鲜奶", "鸡蛋", "酸奶", "奶酪", "黄油"]
         };
-
         let db = JSON.parse(localStorage.getItem('lh_analyst_v4_0') || '[]');
         let gUnit = 'original', selectedDay = new Date().toISOString().split('T')[0], isCalendarOpen = false;
 
@@ -178,27 +175,18 @@
         function updateSubSuggestions(isFilter = false) {
             const cat = isFilter ? document.getElementById('filterCat').value : document.getElementById('mainCategory').value;
             const subInput = document.getElementById('subCategory');
-            
-            // 经理逻辑：零食和其它变灰禁用
             if(!isFilter) {
-                if(cat === "零食" || cat === "其他") {
-                    subInput.disabled = true; subInput.value = "N/A (自由填写明细)";
-                } else {
-                    subInput.disabled = false; subInput.value = "";
-                }
+                if(cat === "零食" || cat === "其他") { subInput.disabled = true; subInput.value = "N/A (自由填写明细)"; }
+                else { subInput.disabled = false; subInput.value = ""; }
                 document.getElementById('subList').innerHTML = ''; 
                 if (subData[cat]) subData[cat].forEach(i => document.getElementById('subList').innerHTML += `<option value="${i}">`);
             } else {
                 const fs = document.getElementById('filterSub');
                 fs.innerHTML = '<option value="">品种对比</option>';
-                
-                // 经理逻辑：零食和其它的品种对比显示已买物品
                 if(cat === "零食" || cat === "其他") {
                     let historyDetail = [...new Set(db.filter(item => item.cat === cat).map(item => item.detail))];
                     historyDetail.forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`);
-                } else {
-                    if (subData[cat]) subData[cat].forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`);
-                }
+                } else { if (subData[cat]) subData[cat].forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`); }
                 render();
             }
         }
@@ -206,19 +194,14 @@
         function submitData() {
             const cat = document.getElementById('mainCategory').value;
             const data = { id: Date.now(), cat: cat, sub: (cat === "零食" || cat === "其他") ? "自由项" : document.getElementById('subCategory').value, detail: document.getElementById('detailName').value, price: parseFloat(document.getElementById('inputPrice').value), qty: parseFloat(document.getElementById('inputQuantity').value), unit: document.getElementById('inputUnit').value, market: document.getElementById('inputMarket').value, date: document.getElementById('inputDate').value };
-            if(!data.detail || !data.price) return alert("MANAGER: CRITICAL FIELDS MISSING!");
+            if(!data.detail || !data.price) return alert("MANAGER: FIELDS MISSING!");
             db.push(data); localStorage.setItem('lh_analyst_v4_0', JSON.stringify(db)); initCalendar(); render();
         }
 
         function render(isDayFilter = false) {
             const fCat = document.getElementById('filterCat').value, fSub = document.getElementById('filterSub').value;
             let filtered = db.filter(item => isDayFilter ? item.date === selectedDay : (!fCat || item.cat === fCat) && (!fSub || item.sub === fSub || item.detail === fSub));
-            
-            let calcList = db.filter(item => {
-                if (fCat === "零食" || fCat === "其他") return item.cat === fCat && item.detail === fSub;
-                return fSub ? item.sub === fSub : fCat ? item.cat === fCat : false;
-            });
-
+            let calcList = db.filter(item => fCat === "零食" || fCat === "其他" ? item.cat === fCat && item.detail === fSub : fSub ? item.sub === fSub : fCat ? item.cat === fCat : false);
             if(calcList.length > 0) {
                 let unitPrices = calcList.map(item => {
                     let base = item.price / item.qty;
@@ -233,10 +216,7 @@
                 document.getElementById('minDetail').innerHTML = `<span class="font-black">${min.raw.sub === '自由项' ? min.raw.detail : min.raw.sub}</span><br>${min.raw.market} | ${min.raw.date}`;
                 document.getElementById('maxDisplay').innerText = `$${max.val.toFixed(2)}`;
                 document.getElementById('maxDetail').innerHTML = `<span class="text-red-500 font-black">${max.raw.sub === '自由项' ? max.raw.detail : max.raw.sub}</span><br>${max.raw.market} | ${max.raw.date}`;
-            } else {
-                document.getElementById('minDisplay').innerText = "$ --"; document.getElementById('maxDisplay').innerText = "$ --";
-            }
-            
+            } else { document.getElementById('minDisplay').innerText = "$ --"; document.getElementById('maxDisplay').innerText = "$ --"; }
             document.getElementById('displayList').innerHTML = '';
             filtered.sort((a,b) => b.id - a.id).forEach(item => {
                 document.getElementById('displayList').innerHTML += `<div class="bg-white p-6 rounded-[2.2rem] shadow-md flex justify-between items-center"><div class="flex flex-col"><div class="flex items-center gap-2 mb-1"><span class="font-[900] text-[15px]">${item.sub === '自由项' ? item.detail : item.sub}</span><span class="text-[9px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-lg uppercase">${item.sub === '自由项' ? 'Other' : item.detail || 'Gen'}</span></div><span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${item.market} | ${item.date}</span></div><div class="text-right"><span class="font-[900] text-blue-600 text-xl tracking-tighter">$${item.price.toFixed(2)}</span><span class="block text-[10px] font-black text-gray-300 uppercase">${item.qty} ${item.unit}</span></div></div>`;
