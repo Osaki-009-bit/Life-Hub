@@ -1,86 +1,126 @@
-<body class="bg-gray-100 pb-20">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life-Hub 严谨比价系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .unit-btn-active { background-color: #2563eb; color: white; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-100 pb-24">
+
     <div class="bg-white p-4 shadow-sm sticky top-0 z-10">
-        <h1 class="text-lg font-bold text-center mb-3">Life-Hub 严谨比价</h1>
-        <div class="flex bg-gray-100 p-1 rounded-lg text-xs" id="globalUnitToggle">
-            <button onclick="changeGlobalUnit('original')" class="unit-toggle-btn flex-1 py-1 rounded bg-white shadow-sm font-bold">原始单价</button>
-            <button onclick="changeGlobalUnit('lb')" class="unit-toggle-btn flex-1 py-1 rounded">统一磅(lb)</button>
-            <button onclick="changeGlobalUnit('kg')" class="unit-toggle-btn flex-1 py-1 rounded">统一千克(kg)</button>
+        <h1 class="text-lg font-black text-center mb-3">LIFE-HUB 核心比价</h1>
+        <div class="flex bg-gray-100 p-1 rounded-xl text-[10px]" id="globalUnitBar">
+            <button onclick="changeGlobalUnit('original')" class="unit-btn flex-1 py-2 rounded-lg unit-btn-active">原始单价</button>
+            <button onclick="changeGlobalUnit('lb')" class="unit-btn flex-1 py-2 rounded-lg">统一磅(lb)</button>
+            <button onclick="changeGlobalUnit('kg')" class="unit-btn flex-1 py-2 rounded-lg">统一千克(kg)</button>
         </div>
     </div>
 
     <div id="statsCard" class="hidden grid grid-cols-3 gap-2 p-4">
-        <div class="bg-blue-600 text-white p-2 rounded-xl text-center">
-            <p class="text-[10px] opacity-70">最低单价</p>
-            <p id="minDisplay" class="font-bold text-sm">--</p>
+        <div class="bg-blue-600 text-white p-3 rounded-2xl text-center shadow-lg">
+            <p class="text-[9px] opacity-70">最低单价</p>
+            <p id="minDisplay" class="font-black text-sm">--</p>
         </div>
-        <div class="bg-gray-800 text-white p-2 rounded-xl text-center">
-            <p class="text-[10px] opacity-70">平均参考</p>
-            <p id="avgDisplay" class="font-bold text-sm">--</p>
+        <div class="bg-gray-800 text-white p-3 rounded-2xl text-center shadow-lg">
+            <p class="text-[9px] opacity-70">平均参考</p>
+            <p id="avgDisplay" class="font-black text-sm">--</p>
         </div>
-        <div class="bg-red-500 text-white p-2 rounded-xl text-center">
-            <p class="text-[10px] opacity-70">最高单价</p>
-            <p id="maxDisplay" class="font-bold text-sm">--</p>
+        <div class="bg-red-500 text-white p-3 rounded-2xl text-center shadow-lg">
+            <p class="text-[9px] opacity-70">最高单价</p>
+            <p id="maxDisplay" class="font-black text-sm">--</p>
         </div>
     </div>
 
-    <div class="m-4 p-4 bg-white rounded-2xl shadow-sm space-y-3">
-        <select id="mainCategory" class="w-full p-2 border rounded-lg bg-gray-50 text-sm" onchange="updateSubSuggestions()">
-            <option value="">请选择商品类别</option>
-            <option value="肉类">肉类</option>
-            <option value="水果">水果</option>
-            <option value="蔬菜">蔬菜</option>
-            <option value="零食">零食</option>
-            <option value="奶和鸡蛋">奶和鸡蛋</option>
-            <option value="其他">其他</option>
-        </select>
+    <div class="m-4 p-5 bg-white rounded-3xl shadow-xl space-y-4 border border-gray-50">
+        <div class="flex flex-col gap-1">
+            <label class="text-[10px] font-bold text-gray-400 uppercase">1. 选择商品大类</label>
+            <select id="mainCategory" class="w-full p-3 border rounded-xl bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-blue-500" onchange="updateSubSuggestions()">
+                <option value="">请选择类别...</option>
+                <option value="肉类">肉类</option>
+                <option value="水果">水果</option>
+                <option value="蔬菜">蔬菜</option>
+                <option value="奶和鸡蛋">奶和鸡蛋</option>
+                <option value="其他">其他</option>
+            </select>
+        </div>
 
-        <input type="text" id="subName" list="subList" placeholder="具体商品名称 (支持模糊拼写)" class="w-full p-2 border rounded-lg text-sm">
-        <datalist id="subList"></datalist>
-
-        <div class="flex gap-2">
-            <div class="flex-1 flex border rounded-lg overflow-hidden">
-                <span class="bg-gray-100 px-2 flex items-center text-gray-500 text-xs">$</span>
-                <input type="number" id="inputPrice" placeholder="金额" class="w-full p-2 text-sm outline-none">
+        <div class="flex gap-3">
+            <div class="flex-1 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">2. 品种(猪/牛/鸡)</label>
+                <input type="text" id="subCategory" list="subList" placeholder="搜索或输入" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                <datalist id="subList"></datalist>
             </div>
-            <div class="flex-1 flex border rounded-lg overflow-hidden">
-                <input type="number" id="inputQuantity" placeholder="数额" class="w-full p-2 text-sm outline-none">
-                <select id="inputUnit" class="bg-gray-100 border-l px-1 text-[10px]">
-                    <optgroup label="重量(可换算)">
-                        <option value="lb">磅(lb)</option>
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                    </optgroup>
-                    <optgroup label="计件(不换算)">
-                        <option value="一盒">一盒</option>
-                        <option value="一袋">一袋</option>
-                        <option value="一捆">一捆</option>
-                        <option value="一个">一个</option>
-                    </optgroup>
-                </select>
+            <div class="flex-1 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">3. 部位/细分描述</label>
+                <input type="text" id="detailName" placeholder="如:梅花肉/战斧" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500">
             </div>
         </div>
 
-        <input type="text" id="inputMarket" list="marketPresets" placeholder="超市 (如：Costco)" class="w-full p-2 border rounded-lg text-sm">
-        <datalist id="marketPresets">
-            <option value="Costco"><option value="Walmart"><option value="T&T Supermarket">
-            <option value="No Frills"><option value="Superstore"><option value="FreshCo">
-        </datalist>
+        <div class="flex gap-3">
+            <div class="flex-1 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">金额 ($)</label>
+                <input type="number" id="inputPrice" step="0.01" class="w-full p-3 border rounded-xl text-sm outline-none">
+            </div>
+            <div class="flex-1 flex flex-col gap-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">计量单位</label>
+                <div class="flex border rounded-xl overflow-hidden">
+                    <input type="number" id="inputQuantity" class="w-full p-3 text-sm outline-none w-1/2">
+                    <select id="inputUnit" class="bg-gray-50 border-l px-1 text-[10px] w-1/2">
+                        <optgroup label="重量换算">
+                            <option value="lb">lb</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                        </optgroup>
+                        <optgroup label="计件(不换算)">
+                            <option value="一盒">一盒</option>
+                            <option value="一袋">一袋</option>
+                            <option value="一个">一个</option>
+                            <option value="一捆">一捆</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-        <button onclick="submitData()" class="w-full bg-blue-600 text-white py-2.5 rounded-xl font-bold active:bg-blue-700">录入数据</button>
+        <div class="flex flex-col gap-1">
+            <label class="text-[10px] font-bold text-gray-400 uppercase">购买超市</label>
+            <input type="text" id="inputMarket" list="marketPresets" placeholder="如: Costco" class="w-full p-3 border rounded-xl text-sm">
+            <datalist id="marketPresets">
+                <option value="Costco"><option value="Walmart"><option value="T&T Supermarket">
+                <option value="No Frills"><option value="Superstore"><option value="FreshCo">
+            </datalist>
+        </div>
+
+        <button onclick="submitData()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all">
+            执行数据录入
+        </button>
     </div>
 
-    <div id="displayList" class="px-4 space-y-2"></div>
+    <div id="displayList" class="px-4 space-y-3"></div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 z-20">
+        <a href="price.html" class="flex flex-col items-center text-blue-600">
+            <span class="text-[10px] font-black">比价系统</span>
+        </a>
+        <a href="schedule.html" class="flex flex-col items-center text-gray-400">
+            <span class="text-[10px] font-bold">课程安排</span>
+        </a>
+    </div>
 
     <script>
+        // 程序员配置的词库
         const subData = {
-            "肉类": ["猪肉", "牛肉", "鸡肉", "羊肉", "战斧牛排", "排骨", "肉碎"],
-            "水果": ["苹果", "香蕉", "橙子", "葡萄", "西瓜", "蓝莓", "草莓"],
-            "蔬菜": ["西红柿", "黄瓜", "土豆", "生菜", "菠菜", "西兰花"],
-            "零食": ["薯片", "巧克力", "坚果", "饼干"],
-            "奶和鸡蛋": ["鲜奶", "大号鸡蛋", "酸奶", "奶酪"]
+            "肉类": ["猪肉", "牛肉", "羊肉", "鸡肉", "鱼肉", "虾/海鲜"],
+            "水果": ["苹果", "香蕉", "橙子", "蓝莓", "葡萄", "草莓", "牛油果"],
+            "蔬菜": ["西红柿", "土豆", "生菜", "西兰花", "黄瓜", "洋葱", "青椒"],
+            "奶和鸡蛋": ["鲜奶", "鸡蛋", "酸奶", "奶酪", "黄油"]
         };
 
-        let db = JSON.parse(localStorage.getItem('lh_prices') || '[]');
+        let db = JSON.parse(localStorage.getItem('lh_prices_v2') || '[]');
         let gUnit = 'original';
 
         function updateSubSuggestions() {
@@ -94,22 +134,33 @@
                     dl.appendChild(opt);
                 });
             }
+            render(); // 切换大类时同步过滤列表
         }
 
         function submitData() {
             const data = {
                 id: Date.now(),
                 cat: document.getElementById('mainCategory').value,
-                name: document.getElementById('subName').value,
+                sub: document.getElementById('subCategory').value,
+                detail: document.getElementById('detailName').value,
                 price: parseFloat(document.getElementById('inputPrice').value),
                 qty: parseFloat(document.getElementById('inputQuantity').value),
                 unit: document.getElementById('inputUnit').value,
                 market: document.getElementById('inputMarket').value,
                 date: new Date().toLocaleDateString()
             };
-            if(!data.name || !data.price) return alert("请填写商品名称和价格");
+            
+            if(!data.sub || !data.price || !data.qty) return alert("经理，数据不全，无法保存！");
+            
             db.push(data);
-            localStorage.setItem('lh_prices', JSON.stringify(db));
+            localStorage.setItem('lh_prices_v2', JSON.stringify(db));
+            
+            // 录入后重置细项，保留大类和超市方便连录
+            document.getElementById('subCategory').value = '';
+            document.getElementById('detailName').value = '';
+            document.getElementById('inputPrice').value = '';
+            document.getElementById('inputQuantity').value = '';
+            
             render();
         }
 
@@ -118,19 +169,17 @@
             const catFilter = document.getElementById('mainCategory').value;
             list.innerHTML = '';
 
-            // 过滤逻辑
             let filtered = db.filter(item => catFilter === "" || item.cat === catFilter);
             
-            // 统计分析
+            // 统计分析逻辑
             if(catFilter !== "" && filtered.length > 0) {
                 document.getElementById('statsCard').classList.remove('hidden');
                 let unitPrices = filtered.map(item => {
-                    // 如果不是重量单位，直接返回总价/数量
                     let basePrice = item.price / item.qty;
                     if (['lb','kg','g'].includes(item.unit)) {
                         if (gUnit === 'lb') {
                             if (item.unit === 'kg') basePrice /= 2.20462;
-                            if (item.unit === 'g') basePrice *= 453.59; // 1lb约453g
+                            if (item.unit === 'g') basePrice *= 453.59;
                         } else if (gUnit === 'kg') {
                             if (item.unit === 'lb') basePrice *= 2.20462;
                             if (item.unit === 'g') basePrice *= 1000;
@@ -147,15 +196,18 @@
 
             filtered.reverse().forEach(item => {
                 const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded-xl flex justify-between items-center shadow-sm";
+                div.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm";
                 div.innerHTML = `
                     <div class="text-sm">
-                        <span class="font-bold">${item.name}</span>
-                        <p class="text-[10px] text-gray-400">${item.market} | ${item.date}</p>
+                        <div class="flex items-center gap-1">
+                            <span class="font-black text-gray-800">${item.sub}</span>
+                            <span class="text-[10px] text-blue-500 font-bold bg-blue-50 px-1 rounded">${item.detail || '通用'}</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1">${item.market} | ${item.date}</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-blue-600 font-bold">$${item.price}</p>
-                        <p class="text-[10px] text-gray-400">${item.qty}${item.unit}</p>
+                        <p class="text-blue-600 font-black text-sm">$${item.price}</p>
+                        <p class="text-[9px] text-gray-400 font-bold">${item.qty} ${item.unit}</p>
                     </div>
                 `;
                 list.appendChild(div);
@@ -164,12 +216,13 @@
 
         function changeGlobalUnit(u) {
             gUnit = u;
-            document.querySelectorAll('.unit-toggle-btn').forEach(b => {
-                b.classList.remove('bg-white', 'shadow-sm', 'font-bold');
-            });
-            event.target.classList.add('bg-white', 'shadow-sm', 'font-bold');
+            document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('unit-btn-active'));
+            event.target.classList.add('unit-btn-active');
             render();
         }
+
+        // 初始加载
         render();
     </script>
 </body>
+</html>
