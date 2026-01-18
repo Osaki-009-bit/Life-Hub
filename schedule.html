@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life-Hub Schedule AGGREGATOR</title>
+    <title>Life-Hub Schedule MULTI-DATE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .has-reg::after { content: ''; display: block; width: 6px; height: 6px; background: #2563eb; margin: 2px auto; border-radius: 50%; }
-        .has-game::after { content: ''; display: block; width: 6px; height: 6px; background: #ef4444; margin: 2px auto; border-radius: 50%; }
-        .selected-day { background-color: #eff6ff; border: 2px solid #2563eb; border-radius: 12px; }
+        .date-selected { background-color: #2563eb !important; color: white !important; border-radius: 12px; font-weight: 900; }
+        .has-event::after { content: ''; display: block; width: 4px; height: 4px; background: #cbd5e1; margin: 2px auto; border-radius: 50%; }
         .modal-active { display: flex !important; }
         input, select { height: 55px; font-size: 15px !important; font-weight: 900 !important; }
     </style>
@@ -18,99 +17,117 @@
 <body class="bg-gray-100 pb-32">
 
     <div class="bg-white shadow-xl px-6 pt-8 pb-6 rounded-b-[3rem]">
-        <h1 class="text-2xl font-[900] italic tracking-tighter text-blue-900 uppercase mb-6 text-center">Life-Hub <span class="text-blue-500">AGGREGATOR</span></h1>
-        
-        <div class="relative mb-2">
-            <label class="text-[10px] font-black text-blue-600 ml-1 uppercase">新增/搜索课程项目</label>
-            <input type="text" id="courseInput" list="courseHistory" placeholder="输入课程名 (如: 篮球课)" 
-                   class="w-full p-4 border-2 border-blue-50 border-gray-50 rounded-2xl bg-gray-50 text-base font-black outline-none focus:border-blue-500">
-            <datalist id="courseHistory"></datalist>
-        </div>
+        <h1 class="text-2xl font-[900] italic tracking-tighter text-blue-900 uppercase mb-6 text-center">Life-Hub <span class="text-blue-500">SCHEDULE</span></h1>
+        <input type="text" id="courseInput" list="courseHistory" placeholder="输入课程名 (如: 篮球课)" 
+               class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-base font-black outline-none focus:border-blue-500">
+        <datalist id="courseHistory"></datalist>
     </div>
 
     <div class="mx-6 mt-6 p-7 bg-white rounded-[2.8rem] shadow-2xl space-y-4">
         <div class="flex border-b border-gray-100 mb-2">
-            <button onclick="setMode('regular')" id="tabReg" class="flex-1 py-3 text-[11px] font-black border-b-4 border-blue-600 text-blue-600">常规周课</button>
-            <button onclick="setMode('special')" id="tabSpec" class="flex-1 py-3 text-[11px] font-black text-gray-400">比赛/变动</button>
+            <div class="flex-1 py-3 text-[11px] font-black border-b-4 border-blue-600 text-blue-600 text-center uppercase tracking-widest">录入明细</div>
         </div>
 
-        <div id="dateInputArea" class="hidden">
-            <input type="date" id="specDate" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
-        </div>
+        <button onclick="openPicker()" class="w-full py-4 bg-blue-50 border-2 border-blue-100 rounded-2xl flex justify-between items-center px-5 active:scale-95 transition-all">
+            <span class="text-blue-600 font-black text-sm">📅 点击日历多选日期 (某月某日)</span>
+            <span id="selectedCount" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full">已选 0 天</span>
+        </button>
 
         <div class="grid grid-cols-2 gap-3">
             <input type="time" id="startTime" class="p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
             <input type="time" id="endTime" class="p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
         </div>
 
-        <div id="regExtra" class="grid grid-cols-2 gap-3">
-            <div class="relative">
+        <div class="grid grid-cols-2 gap-3">
+            <div class="relative flex items-center">
                 <input type="number" id="sessions" placeholder="总课时" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
-                <span class="absolute right-4 top-4 text-[10px] font-black text-gray-400 uppercase">节</span>
+                <span class="absolute right-4 text-[11px] font-black text-gray-300">节</span>
             </div>
-            <div class="relative">
+            <div class="relative flex items-center">
                 <input type="text" id="range" placeholder="几月到几月" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
-                <span class="absolute right-4 top-4 text-[10px] font-black text-gray-400 uppercase">月</span>
+                <span class="absolute right-4 text-[11px] font-black text-gray-300">月</span>
             </div>
         </div>
 
-        <input type="text" id="loc" placeholder="上课/比赛地点" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
+        <input type="text" id="loc" placeholder="地点 (e.g. 体育馆)" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-black outline-none">
 
-        <button onclick="saveEntry()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Course</button>
+        <button onclick="saveBulk()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Course</button>
     </div>
 
     <div id="projectContainer" class="px-6 mt-8 space-y-4"></div>
 
-    <div id="calendarModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex-col justify-end">
-        <div class="bg-white rounded-t-[3rem] p-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center">
-                <h2 id="modalTitle" class="text-2xl font-[900] text-gray-900 uppercase">课程详情</h2>
-                <button onclick="closeModal()" class="text-gray-300 text-3xl">✕</button>
+    <div id="pickerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex-col justify-end">
+        <div class="bg-white rounded-t-[3rem] p-8 space-y-6 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-4">
+                <div>
+                    <h2 class="text-xl font-[900] text-gray-900 uppercase">选择上课日期</h2>
+                    <p class="text-[10px] font-black text-gray-400">支持跨月多选，点击日期即可选中</p>
+                </div>
+                <button onclick="closePicker()" class="bg-gray-100 text-gray-400 p-2 rounded-full px-4 font-black">完成</button>
             </div>
             
-            <div id="dayDetail" class="bg-blue-600 p-6 rounded-[2rem] text-white shadow-xl shadow-blue-100">
-                <p id="detailDate" class="text-[10px] font-black uppercase opacity-80 tracking-[0.2em] mb-1">请选择日期查看</p>
-                <p id="detailTime" class="text-2xl font-[900] leading-none my-2">--:--</p>
-                <p id="detailLoc" class="text-[11px] font-bold opacity-90 italic">📍 选择日历中有点的日期</p>
-            </div>
-
-            <div id="modalCalendar" class="grid grid-cols-7 gap-2 text-center text-[11px] font-black">
+            <div id="pickerCalendar" class="grid grid-cols-7 gap-1 text-center text-[11px] font-black">
                 </div>
-
-            <button onclick="deleteProject()" class="w-full py-4 text-red-500 font-black text-[10px] uppercase tracking-widest opacity-30">删除整个课程项目档案</button>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('lh_aggregator_v1') || '[]');
-        let mode = 'regular';
-        let activeProject = '';
+        let db = JSON.parse(localStorage.getItem('lh_multidate_v1') || '[]');
+        let tempDates = []; // 临时存储选中的日期
 
-        function setMode(m) {
-            mode = m;
-            document.getElementById('tabReg').className = m === 'regular' ? 'flex-1 py-3 text-[11px] font-black border-b-4 border-blue-600 text-blue-600' : 'flex-1 py-3 text-[11px] font-black text-gray-400';
-            document.getElementById('tabSpec').className = m === 'special' ? 'flex-1 py-3 text-[11px] font-black border-b-4 border-blue-600 text-blue-600' : 'flex-1 py-3 text-[11px] font-black text-gray-400';
-            document.getElementById('dateInputArea').classList.toggle('hidden', m === 'regular');
-            document.getElementById('regExtra').classList.toggle('hidden', m === 'special');
+        function openPicker() {
+            document.getElementById('pickerModal').classList.add('modal-active');
+            renderPickerCalendar();
         }
 
-        function saveEntry() {
-            const name = document.getElementById('courseInput').value;
-            if(!name) return alert("经理，请输入项目名称！");
+        function closePicker() {
+            document.getElementById('pickerModal').classList.remove('modal-active');
+            document.getElementById('selectedCount').innerText = `已选 ${tempDates.length} 天`;
+        }
+
+        function renderPickerCalendar() {
+            const grid = document.getElementById('pickerCalendar');
+            grid.innerHTML = '<div class="py-2">日</div><div class="py-2">一</div><div class="py-2">二</div><div class="py-2">三</div><div class="py-2">四</div><div class="py-2">五</div><div class="py-2">六</div>';
             
-            const entry = {
-                id: Date.now(),
-                name, mode,
-                start: document.getElementById('startTime').value,
-                end: document.getElementById('endTime').value,
-                loc: document.getElementById('loc').value,
-                day: new Date().getDay(),
-                date: document.getElementById('specDate').value || new Date().toISOString().split('T')[0],
-                total: document.getElementById('sessions').value,
-                range: document.getElementById('range').value
-            };
-            db.push(entry);
-            localStorage.setItem('lh_aggregator_v1', JSON.stringify(db));
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+            for(let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${i.toString().padStart(2,'0')}`;
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = "py-4 text-gray-400 transition-all";
+                if(tempDates.includes(dateStr)) btn.classList.add('date-selected');
+                
+                btn.onclick = () => {
+                    if(tempDates.includes(dateStr)) tempDates = tempDates.filter(d => d !== dateStr);
+                    else tempDates.push(dateStr);
+                    renderPickerCalendar();
+                };
+                grid.appendChild(btn);
+            }
+        }
+
+        function saveBulk() {
+            const name = document.getElementById('courseInput').value;
+            if(!name || tempDates.length === 0) return alert("经理，请输入课程名并至少选择一个日期！");
+            
+            tempDates.forEach(date => {
+                const entry = {
+                    id: Date.now() + Math.random(),
+                    name, date,
+                    start: document.getElementById('startTime').value,
+                    end: document.getElementById('endTime').value,
+                    loc: document.getElementById('loc').value,
+                    total: document.getElementById('sessions').value,
+                    range: document.getElementById('range').value
+                };
+                db.push(entry);
+            });
+
+            localStorage.setItem('lh_multidate_v1', JSON.stringify(db));
+            tempDates = [];
+            document.getElementById('selectedCount').innerText = `已选 0 天`;
             render();
         }
 
@@ -123,78 +140,49 @@
             const projects = [...new Set(db.map(i => i.name))];
             projects.forEach(p => {
                 history.innerHTML += `<option value="${p}">`;
+                const pData = db.filter(i => i.name === p).sort((a,b) => a.date.localeCompare(b.date));
+                
                 container.innerHTML += `
-                    <button onclick="openModal('${p}')" class="w-full bg-white p-8 rounded-[2.5rem] shadow-xl flex justify-between items-center border border-gray-50 active:scale-[0.97] transition-all">
-                        <div class="text-left">
-                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">COURSE PROJECT</p>
-                            <h3 class="text-2xl font-[900] text-gray-900 uppercase">${p}</h3>
+                    <div class="bg-white p-7 rounded-[2.5rem] shadow-xl border border-gray-50 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">PROJECT ARCHIVE</p>
+                                <h3 class="text-2xl font-[900] text-gray-900 uppercase">${p}</h3>
+                            </div>
+                            <button onclick="deleteProject('${p}')" class="text-gray-200 text-xl">✕</button>
                         </div>
-                        <div class="bg-gray-100 p-4 rounded-2xl text-gray-400">➔</div>
-                    </button>
+                        
+                        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                            ${pData.map(d => `
+                                <div class="bg-gray-50 p-4 rounded-2xl flex justify-between items-center border border-gray-100">
+                                    <div class="text-left">
+                                        <p class="text-[11px] font-[900] text-gray-800">${d.date} | 周${['日','一','二','三','四','五','六'][new Date(d.date).getDay()]}</p>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase">📍 ${d.loc}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[13px] font-[900] text-blue-600 tracking-tighter">${d.start} - ${d.end}</p>
+                                        <button onclick="deleteSingle('${d.id}')" class="text-[8px] font-black text-red-300 uppercase mt-1">Delete</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 `;
             });
         }
 
-        function openModal(name) {
-            activeProject = name;
-            document.getElementById('modalTitle').innerText = name;
-            document.getElementById('calendarModal').classList.add('modal-active');
-            renderModalCalendar();
-        }
-
-        function closeModal() {
-            document.getElementById('calendarModal').classList.remove('modal-active');
-        }
-
-        function renderModalCalendar() {
-            const grid = document.getElementById('modalCalendar');
-            grid.innerHTML = '<div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>';
-            
-            const now = new Date();
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const projectData = db.filter(i => i.name === activeProject);
-
-            for(let i = 1; i <= daysInMonth; i++) {
-                const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${i.toString().padStart(2,'0')}`;
-                const cellDate = new Date(now.getFullYear(), now.getMonth(), i);
-                
-                const hasReg = projectData.some(p => p.mode === 'regular' && p.day === cellDate.getDay());
-                const hasGame = projectData.some(p => p.mode === 'special' && p.date === dateStr);
-                
-                const dayBtn = document.createElement('button');
-                dayBtn.innerText = i;
-                dayBtn.className = "py-4 relative font-black text-gray-400";
-                if(hasReg) dayBtn.classList.add('has-reg', 'text-gray-900');
-                if(hasGame) dayBtn.classList.add('has-game', 'text-gray-900');
-                
-                dayBtn.onclick = () => {
-                    document.querySelectorAll('#modalCalendar button').forEach(b => b.classList.remove('selected-day'));
-                    dayBtn.classList.add('selected-day');
-                    showDayDetail(dateStr, cellDate.getDay());
-                };
-                grid.appendChild(dayBtn);
-            }
-        }
-
-        function showDayDetail(dateStr, dayNum) {
-            const entry = db.filter(i => i.name === activeProject).find(i => 
-                (i.mode === 'special' && i.date === dateStr) || (i.mode === 'regular' && i.day === dayNum)
-            );
-
-            if(entry) {
-                document.getElementById('detailDate').innerText = `${dateStr} | ${['周日','周一','周二','周三','周四','周五','周六'][dayNum]}`;
-                document.getElementById('detailTime').innerText = `${entry.start} - ${entry.end}`;
-                document.getElementById('detailLoc').innerText = `📍 ${entry.loc || '未设定地点'}`;
-            }
-        }
-
-        function deleteProject() {
-            if(confirm("经理，确定删除此项目所有档案？")) {
-                db = db.filter(i => i.name !== activeProject);
-                localStorage.setItem('lh_aggregator_v1', JSON.stringify(db));
-                closeModal();
+        function deleteProject(name) {
+            if(confirm("确定删除整个项目？")) {
+                db = db.filter(i => i.name !== name);
+                localStorage.setItem('lh_multidate_v1', JSON.stringify(db));
                 render();
             }
+        }
+
+        function deleteSingle(id) {
+            db = db.filter(i => i.id.toString() !== id.toString());
+            localStorage.setItem('lh_multidate_v1', JSON.stringify(db));
+            render();
         }
 
         render();
