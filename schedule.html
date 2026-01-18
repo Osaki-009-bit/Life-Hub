@@ -2,63 +2,81 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life-Hub 课程与习惯</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Life-Hub Schedule MAX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .past-event { opacity: 0.6; filter: grayscale(1); }
-        .current-event { border: 2px solid #2563eb; background-color: #eff6ff; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .active-day { background-color: #2563eb !important; color: white !important; transform: scale(1.1); font-weight: 900; }
+        .past-event { opacity: 0.4; filter: grayscale(1); }
+        .current-event { border: 4px solid #2563eb; background-color: #eff6ff; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
+        input { height: 60px; font-size: 16px !important; }
     </style>
 </head>
-<body class="bg-gray-100 pb-24">
-    <div id="alertBar" class="hidden bg-red-600 text-white p-3 text-center sticky top-0 z-20 font-bold shadow-lg">
+<body class="bg-gray-100 pb-32 text-left">
+
+    <div id="urgentAlert" class="hidden bg-red-600 text-white p-5 text-center font-[900] text-lg uppercase tracking-widest sticky top-0 z-50 shadow-2xl">
         </div>
 
-    <div class="p-4">
-        <h1 class="text-xl font-bold text-center mb-4">课程与活动安排</h1>
+    <div class="bg-white shadow-xl px-5 pt-8 pb-6 rounded-b-[2.5rem]">
+        <h1 class="text-2xl font-[900] italic tracking-tighter text-blue-900 uppercase mb-6 text-center">Life-Hub <span class="text-blue-500">SCHEDULE</span></h1>
         
-        <div class="flex justify-between bg-white p-1 rounded-xl shadow-sm mb-4 overflow-x-auto">
-            <button onclick="setDay(1)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="1">周一</button>
-            <button onclick="setDay(2)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="2">周二</button>
-            <button onclick="setDay(3)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="3">周三</button>
-            <button onclick="setDay(4)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="4">周四</button>
-            <button onclick="setDay(5)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="5">周五</button>
-            <button onclick="setDay(6)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="6">周六</button>
-            <button onclick="setDay(0)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="0">周日</button>
+        <div class="flex justify-between gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="setDay(1)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="1">周一</button>
+            <button onclick="setDay(2)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="2">周二</button>
+            <button onclick="setDay(3)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="3">周三</button>
+            <button onclick="setDay(4)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="4">周四</button>
+            <button onclick="setDay(5)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="5">周五</button>
+            <button onclick="setDay(6)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="6">周六</button>
+            <button onclick="setDay(0)" class="day-btn flex-1 min-w-[50px] py-4 bg-gray-100 rounded-2xl text-xs font-black transition-all" data-day="0">周日</button>
         </div>
-
-        <div class="bg-white p-4 rounded-2xl shadow-sm mb-6 space-y-3">
-            <input type="text" id="courseName" placeholder="课程/活动名称 (如：游泳)" class="w-full p-2 border rounded-lg">
-            <div class="flex gap-2">
-                <div class="flex-1">
-                    <label class="text-[10px] text-gray-400">开始时间</label>
-                    <input type="time" id="startTime" class="w-full p-2 border rounded-lg">
-                </div>
-                <div class="flex-1">
-                    <label class="text-[10px] text-gray-400">结束时间</label>
-                    <input type="time" id="endTime" class="w-full p-2 border rounded-lg">
-                </div>
-            </div>
-            <input type="text" id="location" placeholder="地点/教室" class="w-full p-2 border rounded-lg text-sm">
-            <button onclick="saveCourse()" class="w-full bg-blue-600 text-white py-2 rounded-xl font-bold">添加安排</button>
-        </div>
-
-        <div id="courseList" class="space-y-3">
-            </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 text-gray-400">
-        <a href="price.html" class="flex flex-col items-center">
-            <span class="text-[10px]">生活比价</span>
+    <div class="mx-5 my-6 p-7 bg-white rounded-[3rem] shadow-2xl space-y-5 border border-gray-50">
+        <div class="text-center mb-2">
+            <span class="px-6 py-1 bg-gray-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Add Course</span>
+        </div>
+
+        <input type="text" id="courseName" placeholder="课程名称 (e.g. 钢琴课)" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-base font-[900] outline-none focus:border-blue-500">
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-gray-400 ml-2 uppercase">开始时间</label>
+                <input type="time" id="startTime" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-base font-black outline-none">
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-gray-400 ml-2 uppercase">结束时间</label>
+                <input type="time" id="endTime" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-base font-black outline-none">
+            </div>
+        </div>
+
+        <input type="text" id="location" placeholder="上课地点 (e.g. 302教室)" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-sm font-black outline-none">
+
+        <button onclick="saveCourse()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Schedule</button>
+    </div>
+
+    <div id="courseList" class="px-5 space-y-4 pb-12"></div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 flex justify-around p-6 z-40">
+        <a href="price.html" class="flex flex-col items-center text-gray-400">
+            <span class="text-[10px] font-black uppercase tracking-widest">Analytics</span>
         </a>
         <a href="schedule.html" class="flex flex-col items-center text-blue-600">
-            <span class="text-[10px] font-bold">课程安排</span>
+            <div class="w-2 h-2 bg-blue-600 rounded-full mb-1 shadow-lg shadow-blue-300"></div>
+            <span class="text-[10px] font-black uppercase tracking-widest">Schedule</span>
         </a>
     </div>
 
     <script>
-        let courses = JSON.parse(localStorage.getItem('family_courses') || '[]');
-        let currentViewDay = new Date().getDay(); // 默认显示今天
+        let courses = JSON.parse(localStorage.getItem('lh_schedule_max_v1') || '[]');
+        let currentDay = new Date().getDay(); // 默认显示今天
+
+        function setDay(day) {
+            currentDay = day;
+            renderCourses();
+        }
 
         function saveCourse() {
             const name = document.getElementById('courseName').value;
@@ -66,21 +84,13 @@
             const end = document.getElementById('endTime').value;
             const loc = document.getElementById('location').value;
 
-            if(!name || !start || !end) return alert("请填写名称和时间");
+            if(!name || !start || !end) return alert("MANAGER: FIELDS MISSING!");
 
-            courses.push({
-                id: Date.now(),
-                day: currentViewDay,
-                name, start, end, loc
-            });
-            localStorage.setItem('family_courses', JSON.stringify(courses));
-            renderCourses();
-            // 清空输入
+            courses.push({ id: Date.now(), day: currentDay, name, start, end, loc });
+            localStorage.setItem('lh_schedule_max_v1', JSON.stringify(courses));
+            
+            // 清空录入
             document.getElementById('courseName').value = '';
-        }
-
-        function setDay(d) {
-            currentViewDay = d;
             renderCourses();
         }
 
@@ -89,68 +99,66 @@
             const btns = document.querySelectorAll('.day-btn');
             listDiv.innerHTML = '';
 
-            // 更新按钮样式
+            // 更新按钮状态
             btns.forEach(btn => {
-                if(parseInt(btn.dataset.day) === currentViewDay) {
-                    btn.classList.add('bg-blue-600', 'text-white');
-                } else {
-                    btn.classList.remove('bg-blue-600', 'text-white');
-                }
+                if(parseInt(btn.dataset.day) === currentDay) btn.classList.add('active-day');
+                else btn.classList.remove('active-day');
             });
 
-            // 过滤并排序（按开始时间）
-            let todays = courses.filter(c => c.day === currentViewDay)
-                                .sort((a, b) => a.start.localeCompare(b.start));
-
+            // 获取当天的课并排序
+            let todays = courses.filter(c => c.day === currentDay).sort((a, b) => a.start.localeCompare(b.start));
+            
             const now = new Date();
-            const nowTimeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const nowTime = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
 
             todays.forEach(c => {
                 let statusClass = "";
-                let statusLabel = "";
-                
-                if (nowTimeStr > c.end) {
+                let statusTag = "";
+
+                if (nowTime > c.end) {
                     statusClass = "past-event";
-                    statusLabel = " (已结束)";
-                } else if (nowTimeStr >= c.start && nowTimeStr <= c.end) {
-                    statusClass = "current-event shadow-blue-200";
-                    statusLabel = " 🟢 正在上课";
+                    statusTag = `<span class="bg-gray-200 text-gray-500 px-3 py-1 rounded-lg text-[10px]">FINISHED</span>`;
+                } else if (nowTime >= c.start && nowTime <= c.end) {
+                    statusClass = "current-event";
+                    statusTag = `<span class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] animate-pulse">ON GOING</span>`;
+                } else {
+                    statusTag = `<span class="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-[10px]">UPCOMING</span>`;
                 }
 
-                const item = document.createElement('div');
-                item.className = `bg-white p-4 rounded-xl shadow-sm flex justify-between items-center transition-all ${statusClass}`;
-                item.innerHTML = `
-                    <div>
-                        <p class="font-bold text-lg">${c.name}<span class="text-xs font-normal text-blue-500">${statusLabel}</span></p>
-                        <p class="text-sm text-gray-500">${c.start} - ${c.end}</p>
-                        <p class="text-xs text-gray-400">地点: ${c.loc || '未设定'}</p>
+                listDiv.innerHTML += `
+                    <div class="bg-white p-7 rounded-[2.5rem] shadow-xl flex justify-between items-center transition-all ${statusClass}">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-xl font-[900] text-gray-900">${c.name}</span>
+                                ${statusTag}
+                            </div>
+                            <p class="text-sm font-black text-blue-600 uppercase tracking-tighter">${c.start} — ${c.end}</p>
+                            <p class="text-[11px] font-bold text-gray-400 mt-2 uppercase">📍 ${c.loc || 'No Location'}</p>
+                        </div>
+                        <button onclick="deleteCourse(${c.id})" class="text-red-300 active:text-red-600 p-2 text-xl">✕</button>
                     </div>
-                    <button onclick="deleteCourse(${c.id})" class="text-red-400 text-xs">删除</button>
                 `;
-                listDiv.appendChild(item);
             });
-
-            checkReminder();
+            updateUrgentAlert();
         }
 
         function deleteCourse(id) {
-            if(confirm("确定删除该安排？")) {
+            if(confirm("确定要删除这条安排吗，经理？")) {
                 courses = courses.filter(c => c.id !== id);
-                localStorage.setItem('family_courses', JSON.stringify(courses));
+                localStorage.setItem('lh_schedule_max_v1', JSON.stringify(courses));
                 renderCourses();
             }
         }
 
-        function checkReminder() {
-            const alertBar = document.getElementById('alertBar');
+        function updateUrgentAlert() {
+            const alertBar = document.getElementById('urgentAlert');
             const now = new Date();
-            const todayNum = now.getDay();
+            const today = now.getDay();
             
-            // 只在今天的数据里找
-            let upcoming = courses.filter(c => c.day === todayNum).sort((a,b) => a.start.localeCompare(b.start));
+            let todayUpcoming = courses.filter(c => c.day === today).sort((a,b) => a.start.localeCompare(b.start));
             
             let found = false;
-            for(let c of upcoming) {
+            for(let c of todayUpcoming) {
                 let [h, m] = c.start.split(':').map(Number);
                 let startTime = new Date();
                 startTime.setHours(h, m, 0);
@@ -167,7 +175,7 @@
             if(!found) alertBar.classList.add('hidden');
         }
 
-        // 每分钟刷新一次状态
+        // 每一分钟自动刷新一次页面状态
         setInterval(renderCourses, 60000);
         renderCourses();
     </script>
