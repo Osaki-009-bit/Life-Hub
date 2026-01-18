@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life-Hub 课程与习惯</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .past-event { opacity: 0.6; filter: grayscale(1); }
+        .current-event { border: 2px solid #2563eb; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="bg-gray-100 pb-24">
+    <div id="alertBar" class="hidden bg-red-600 text-white p-3 text-center sticky top-0 z-20 font-bold shadow-lg">
+        </div>
 
+    <div class="p-4">
+        <h1 class="text-xl font-bold text-center mb-4">课程与活动安排</h1>
+        
+        <div class="flex justify-between bg-white p-1 rounded-xl shadow-sm mb-4 overflow-x-auto">
+            <button onclick="setDay(1)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="1">周一</button>
+            <button onclick="setDay(2)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="2">周二</button>
+            <button onclick="setDay(3)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="3">周三</button>
+            <button onclick="setDay(4)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="4">周四</button>
+            <button onclick="setDay(5)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="5">周五</button>
+            <button onclick="setDay(6)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="6">周六</button>
+            <button onclick="setDay(0)" class="day-btn flex-1 py-2 rounded-lg text-sm" data-day="0">周日</button>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm mb-6 space-y-3">
+            <input type="text" id="courseName" placeholder="课程/活动名称 (如：游泳)" class="w-full p-2 border rounded-lg">
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="text-[10px] text-gray-400">开始时间</label>
+                    <input type="time" id="startTime" class="w-full p-2 border rounded-lg">
+                </div>
+                <div class="flex-1">
+                    <label class="text-[10px] text-gray-400">结束时间</label>
+                    <input type="time" id="endTime" class="w-full p-2 border rounded-lg">
+                </div>
+            </div>
+            <input type="text" id="location" placeholder="地点/教室" class="w-full p-2 border rounded-lg text-sm">
+            <button onclick="saveCourse()" class="w-full bg-blue-600 text-white py-2 rounded-xl font-bold">添加安排</button>
+        </div>
+
+        <div id="courseList" class="space-y-3">
+            </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 text-gray-400">
+        <a href="price.html" class="flex flex-col items-center">
+            <span class="text-[10px]">生活比价</span>
+        </a>
+        <a href="schedule.html" class="flex flex-col items-center text-blue-600">
+            <span class="text-[10px] font-bold">课程安排</span>
+        </a>
+    </div>
+
+    <script>
+        let courses = JSON.parse(localStorage.getItem('family_courses') || '[]');
+        let currentViewDay = new Date().getDay(); // 默认显示今天
+
+        function saveCourse() {
+            const name = document.getElementById('courseName').value;
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+            const loc = document.getElementById('location').value;
+
+            if(!name || !start || !end) return alert("请填写名称和时间");
+
+            courses.push({
+                id: Date.now(),
+                day: currentViewDay,
+                name, start, end, loc
+            });
+            localStorage.setItem('family_courses', JSON.stringify(courses));
+            renderCourses();
+            // 清空输入
+            document.getElementById('courseName').value = '';
+        }
+
+        function setDay(d) {
+            currentViewDay = d;
+            renderCourses();
+        }
+
+        function renderCourses() {
+            const listDiv = document.getElementById('courseList');
+            const btns = document.querySelectorAll('.day-btn');
+            listDiv.innerHTML = '';
+
+            // 更新按钮样式
+            btns.forEach(btn => {
+                if(parseInt(btn.dataset.day) === currentViewDay) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                }
+            });
+
+            // 过滤并排序（按开始时间）
+            let todays = courses.filter(c => c.day === currentViewDay)
+                                .sort((a, b) => a.start.localeCompare(b.start));
+
+            const now = new Date();
+            const nowTimeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+            todays.forEach(c => {
+                let statusClass = "";
+                let statusLabel = "";
+                
+                if (nowTimeStr > c.end) {
+                    statusClass = "past-event";
+                    statusLabel = " (已结束)";
+                } else if (nowTimeStr >= c.start && nowTimeStr <= c.end) {
+                    statusClass = "current-event shadow-blue-200";
+                    statusLabel = " 🟢 正在上课";
+                }
+
+                const item = document.createElement('div');
+                item.className = `bg-white p-4 rounded-xl shadow-sm flex justify-between items-center transition-all ${statusClass}`;
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-lg">${c.name}<span class="text-xs font-normal text-blue-500">${statusLabel}</span></p>
+                        <p class="text-sm text-gray-500">${c.start} - ${c.end}</p>
+                        <p class="text-xs text-gray-400">地点: ${c.loc || '未设定'}</p>
+                    </div>
+                    <button onclick="deleteCourse(${c.id})" class="text-red-400 text-xs">删除</button>
+                `;
+                listDiv.appendChild(item);
+            });
+
+            checkReminder();
+        }
+
+        function deleteCourse(id) {
+            if(confirm("确定删除该安排？")) {
+                courses = courses.filter(c => c.id !== id);
+                localStorage.setItem('family_courses', JSON.stringify(courses));
+                renderCourses();
+            }
+        }
+
+        function checkReminder() {
+            const alertBar = document.getElementById('alertBar');
+            const now = new Date();
+            const todayNum = now.getDay();
+            
+            // 只在今天的数据里找
+            let upcoming = courses.filter(c => c.day === todayNum).sort((a,b) => a.start.localeCompare(b.start));
+            
+            let found = false;
+            for(let c of upcoming) {
+                let [h, m] = c.start.split(':').map(Number);
+                let startTime = new Date();
+                startTime.setHours(h, m, 0);
+                
+                let diff = (startTime - now) / 1000 / 60; // 分钟差
+
+                if(diff > 0 && diff <= 30) {
+                    alertBar.innerText = `距离 ${c.name} 开始还有 ${Math.floor(diff)} 分钟`;
+                    alertBar.classList.remove('hidden');
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) alertBar.classList.add('hidden');
+        }
+
+        // 每分钟刷新一次状态
+        setInterval(renderCourses, 60000);
+        renderCourses();
+    </script>
+</body>
+</html>
