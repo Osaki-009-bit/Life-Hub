@@ -3,66 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life-Hub Analyst V3.1</title>
+    <title>Life-Hub Analyst V3.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .has-data { background-color: #22c55e !important; color: white !important; font-weight: bold; border-radius: 50%; }
-        .selected-date { border: 2px solid #2563eb !important; }
+        .selected-date { border: 2px solid #2563eb !important; background-color: #eff6ff; }
         ::-webkit-scrollbar { display: none; }
+        #calendarDrawer { transition: max-height 0.3s ease-out; overflow: hidden; }
+        .drawer-closed { max-height: 0; }
+        .drawer-open { max-height: 300px; padding-bottom: 1rem; }
     </style>
 </head>
 <body class="bg-gray-50 pb-28 text-gray-900 font-sans">
 
-    <div class="bg-white shadow-md sticky top-0 z-30 px-4 pt-4 pb-3">
+    <div class="bg-white shadow-md sticky top-0 z-30 px-4 pt-4 pb-3 border-b border-gray-100">
         <h1 class="text-center text-xl font-black italic tracking-tighter mb-4 text-blue-900 uppercase">Life-Hub Analyst</h1>
         
-        <div class="mb-4">
-            <p id="currentMonthStr" class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest text-center"></p>
-            <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-[10px]">
-                </div>
+        <div class="mb-3">
+            <button onclick="toggleCalendar()" class="w-full flex justify-between items-center bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-all">
+                <span class="text-[11px] font-black text-gray-600 uppercase tracking-widest">📅 点击查看/筛选历史日期</span>
+                <span id="calendarToggleIcon" class="text-gray-400">▼</span>
+            </button>
+            <div id="calendarDrawer" class="drawer-closed mt-2">
+                <p id="currentMonthStr" class="text-[10px] font-black text-blue-500 mb-2 uppercase text-center"></p>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-[10px]">
+                    </div>
+            </div>
         </div>
 
-        <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-xl">
-            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">统一计量视图:</label>
-            <select id="globalUnitSelect" onchange="changeGlobalUnit(this.value)" class="flex-1 bg-white border-none rounded-lg p-2 text-[11px] font-black text-blue-800 outline-none shadow-sm">
-                <option value="original">显示原始录入单价</option>
-                <option value="lb">统一换算为：磅 (lb)</option>
-                <option value="kg">统一换算为：千克 (kg)</option>
-                <option value="g">统一换算为：克 (g)</option>
+        <div class="flex items-center gap-2 bg-blue-50 p-1.5 rounded-xl border border-blue-100">
+            <label class="text-[9px] font-black text-blue-400 uppercase ml-2">视图单位:</label>
+            <select id="globalUnitSelect" onchange="changeGlobalUnit(this.value)" class="flex-1 bg-transparent border-none rounded-lg p-1 text-[11px] font-black text-blue-800 outline-none">
+                <option value="original">原始录入单价</option>
+                <option value="lb">统一换算：磅 (lb)</option>
+                <option value="kg">统一换算：千克 (kg)</option>
+                <option value="g">统一换算：克 (g)</option>
             </select>
         </div>
     </div>
 
     <div id="statsCard" class="grid grid-cols-2 gap-3 p-4">
-        <div class="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-100 text-white">
-            <p class="text-[9px] font-black uppercase opacity-80 mb-1">史低单价 (LOWEST)</p>
-            <p id="minDisplay" class="font-black text-xl leading-none my-1">--</p>
-            <div id="minDetail" class="text-[9px] opacity-90 leading-tight mt-2 min-h-[30px]">等待筛选...</div>
+        <div class="bg-blue-700 p-4 rounded-[2rem] shadow-lg shadow-blue-100 text-white">
+            <p class="text-[8px] font-black uppercase opacity-70 mb-1 tracking-widest">Lowest Price</p>
+            <p id="minDisplay" class="font-black text-2xl leading-none">--</p>
+            <div id="minDetail" class="text-[9px] opacity-80 leading-tight mt-3 border-t border-blue-500/50 pt-2 min-h-[35px]">请选择对比品种</div>
         </div>
-        <div class="bg-red-600 p-4 rounded-3xl shadow-lg shadow-red-100 text-white">
-            <p class="text-[9px] font-black uppercase opacity-80 mb-1">史高单价 (HIGHEST)</p>
-            <p id="maxDisplay" class="font-black text-xl leading-none my-1">--</p>
-            <div id="maxDetail" class="text-[9px] opacity-90 leading-tight mt-2 min-h-[30px]">等待筛选...</div>
+        <div class="bg-red-700 p-4 rounded-[2rem] shadow-lg shadow-red-100 text-white">
+            <p class="text-[8px] font-black uppercase opacity-70 mb-1 tracking-widest">Highest Price</p>
+            <p id="maxDisplay" class="font-black text-2xl leading-none">--</p>
+            <div id="maxDetail" class="text-[9px] opacity-80 leading-tight mt-3 border-t border-red-500/50 pt-2 min-h-[35px]">请选择对比品种</div>
         </div>
     </div>
 
     <div class="px-4 mb-2 flex gap-2">
-        <select id="filterCat" class="flex-1 p-3 bg-white border border-gray-100 rounded-xl text-[11px] font-black text-gray-700 outline-none shadow-sm" onchange="updateSubSuggestions(true)">
-            <option value="">大类对比: 全部</option>
-            <option value="肉类">🥩 肉类</option>
-            <option value="水果">🍎 水果</option>
-            <option value="蔬菜">🥦 蔬菜</option>
-            <option value="奶和鸡蛋">🥛 奶和鸡蛋</option>
+        <select id="filterCat" class="flex-1 p-3 bg-white border border-gray-200 rounded-xl text-[10px] font-black text-gray-700 outline-none" onchange="updateSubSuggestions(true)">
+            <option value="">筛选大类</option>
+            <option value="肉类">🥩 肉类对比</option>
+            <option value="水果">🍎 水果对比</option>
+            <option value="蔬菜">🥦 蔬菜对比</option>
+            <option value="奶和鸡蛋">🥛 奶蛋对比</option>
         </select>
-        <select id="filterSub" class="flex-1 p-3 bg-white border border-gray-100 rounded-xl text-[11px] font-black text-gray-700 outline-none shadow-sm" onchange="render()">
-            <option value="">品种对比: 全部</option>
+        <select id="filterSub" class="flex-1 p-3 bg-white border border-gray-200 rounded-xl text-[10px] font-black text-gray-700 outline-none" onchange="render()">
+            <option value="">具体品种对比</option>
         </select>
     </div>
 
     <div class="m-4 p-5 bg-white rounded-[2.5rem] shadow-xl border border-gray-50 space-y-4">
-        <div class="flex justify-between items-center px-2">
-            <span class="text-[10px] font-black text-gray-300 uppercase tracking-widest">New Record</span>
-            <input type="date" id="inputDate" class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-md outline-none border-none">
+        <div class="flex justify-between items-center px-1">
+            <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">🛒 New Data Entry</span>
+            <input type="date" id="inputDate" class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full outline-none">
         </div>
         
         <select id="mainCategory" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none focus:border-blue-500 transition-all" onchange="updateSubSuggestions(false)">
@@ -76,7 +85,7 @@
         <div class="flex gap-2">
             <input type="text" id="subCategory" list="subList" placeholder="2. 品种" class="flex-1 p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none" onfocus="this.value=''">
             <datalist id="subList"></datalist>
-            <input type="text" id="detailName" placeholder="3. 部位/明细" class="flex-1 p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none">
+            <input type="text" id="detailName" placeholder="3. 部位描述" class="flex-1 p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -85,7 +94,7 @@
                 <input type="number" id="inputPrice" step="0.01" placeholder="金额" class="w-full p-4 pl-8 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none">
             </div>
             <div class="flex border-2 border-gray-50 rounded-2xl bg-gray-50 overflow-hidden">
-                <input type="number" id="inputQuantity" placeholder="数额" class="w-1/2 p-4 bg-transparent text-sm font-bold outline-none">
+                <input type="number" id="inputQuantity" placeholder="数量" class="w-1/2 p-4 bg-transparent text-sm font-bold outline-none">
                 <select id="inputUnit" class="w-1/2 bg-white text-[10px] font-bold border-l border-gray-100">
                     <option value="lb">lb</option><option value="kg">kg</option>
                     <option value="g">g</option><option value="一盒">一盒</option>
@@ -95,15 +104,25 @@
             </div>
         </div>
 
-        <input type="text" id="inputMarket" list="marketPresets" placeholder="购买超市" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none">
+        <input type="text" id="inputMarket" list="marketPresets" placeholder="购买超市 (e.g. Costco)" class="w-full p-4 border-2 border-gray-50 rounded-2xl bg-gray-50 text-sm font-bold outline-none">
         <datalist id="marketPresets">
-            <option value="Costco"><option value="T&T Supermarket"><option value="Walmart"><option value="No Frills">
+            <option value="Costco"><option value="T&T Supermarket"><option value="Walmart"><option value="No Frills"><option value="Superstore">
         </datalist>
 
-        <button onclick="submitData()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition-all">SAVE ENTRY</button>
+        <button onclick="submitData()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all uppercase tracking-widest">Save Record</button>
     </div>
 
-    <div id="displayList" class="px-4 space-y-3 pb-4"></div>
+    <div id="displayList" class="px-4 space-y-3 pb-8"></div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around p-5 z-40">
+        <a href="price.html" class="flex flex-col items-center text-blue-600">
+            <div class="w-1.5 h-1.5 bg-blue-600 rounded-full mb-1"></div>
+            <span class="text-[10px] font-black uppercase tracking-widest">Price</span>
+        </a>
+        <a href="schedule.html" class="flex flex-col items-center text-gray-300">
+            <span class="text-[10px] font-black uppercase tracking-widest">Schedule</span>
+        </a>
+    </div>
 
     <script>
         const subData = {
@@ -113,33 +132,43 @@
             "奶和鸡蛋": ["鲜奶", "鸡蛋", "酸奶", "奶酪", "黄油"]
         };
 
-        let db = JSON.parse(localStorage.getItem('lh_analyst_v3_1') || '[]');
+        let db = JSON.parse(localStorage.getItem('lh_analyst_v3_2') || '[]');
         let gUnit = 'original';
         let selectedDay = new Date().toISOString().split('T')[0];
+        let isCalendarOpen = false;
 
-        // 自动设置日期选择器为今天
         document.getElementById('inputDate').value = selectedDay;
+
+        function toggleCalendar() {
+            const drawer = document.getElementById('calendarDrawer');
+            const icon = document.getElementById('calendarToggleIcon');
+            isCalendarOpen = !isCalendarOpen;
+            if (isCalendarOpen) {
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                icon.innerText = '▲';
+            } else {
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                icon.innerText = '▼';
+            }
+        }
 
         function initCalendar() {
             const now = new Date();
             document.getElementById('currentMonthStr').innerText = `${now.getFullYear()} / ${now.getMonth()+1}`;
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-            
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const recordedDates = db.map(i => i.date);
 
             for (let i = 1; i <= daysInMonth; i++) {
-                const dayStr = i.toString().padStart(2, '0');
-                const monthStr = (now.getMonth() + 1).toString().padStart(2, '0');
-                const dateStr = `${now.getFullYear()}-${monthStr}-${dayStr}`;
-                
+                const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${i.toString().padStart(2,'0')}`;
                 const btn = document.createElement('button');
                 btn.innerText = i;
-                btn.className = "py-2 transition-all text-gray-400";
+                btn.className = "py-2 transition-all text-gray-400 font-bold";
                 if (recordedDates.includes(dateStr)) btn.classList.add('has-data');
                 if (dateStr === selectedDay) btn.classList.add('selected-date', 'text-blue-600');
-                
                 btn.onclick = () => {
                     selectedDay = dateStr;
                     document.getElementById('inputDate').value = selectedDay;
@@ -154,12 +183,11 @@
             const cat = isFilter ? document.getElementById('filterCat').value : document.getElementById('mainCategory').value;
             const dl = document.getElementById('subList');
             const fs = document.getElementById('filterSub');
-            
             if(!isFilter) {
                 dl.innerHTML = '';
                 if (subData[cat]) subData[cat].forEach(i => dl.innerHTML += `<option value="${i}">`);
             } else {
-                fs.innerHTML = '<option value="">品种对比: 全部</option>';
+                fs.innerHTML = '<option value="">具体品种对比</option>';
                 if (subData[cat]) subData[cat].forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`);
                 render();
             }
@@ -177,16 +205,9 @@
                 market: document.getElementById('inputMarket').value,
                 date: document.getElementById('inputDate').value
             };
-            
-            if(!data.sub || !data.price || !data.qty) return alert("经理，数据字段未填满！");
-            
+            if(!data.sub || !data.price) return alert("经理，数据缺失！");
             db.push(data);
-            localStorage.setItem('lh_analyst_v3_1', JSON.stringify(db));
-            
-            // 录入后重置
-            document.getElementById('subCategory').value = '';
-            document.getElementById('inputPrice').value = '';
-            
+            localStorage.setItem('lh_analyst_v3_2', JSON.stringify(db));
             initCalendar();
             render();
         }
@@ -205,7 +226,6 @@
                 return match;
             });
 
-            // 计算史高/史低 (仅针对筛选条件)
             let calcList = db.filter(item => {
                 if(fSub) return item.sub === fSub;
                 if(fCat && !fSub) return item.cat === fCat;
@@ -229,13 +249,10 @@
                     }
                     return { val: base, raw: item };
                 });
-                
                 const min = unitPrices.reduce((p, c) => p.val < c.val ? p : c);
                 const max = unitPrices.reduce((p, c) => p.val > c.val ? p : c);
-                
                 document.getElementById('minDisplay').innerText = `$${min.val.toFixed(2)}`;
                 document.getElementById('minDetail').innerHTML = `<b>${min.raw.sub}</b> ${min.raw.detail}<br>${min.raw.market} | ${min.raw.date}`;
-                
                 document.getElementById('maxDisplay').innerText = `$${max.val.toFixed(2)}`;
                 document.getElementById('maxDetail').innerHTML = `<b>${max.raw.sub}</b> ${max.raw.detail}<br>${max.raw.market} | ${max.raw.date}`;
             } else {
@@ -247,28 +264,24 @@
 
             filtered.sort((a,b) => b.id - a.id).forEach(item => {
                 list.innerHTML += `
-                    <div class="bg-white p-5 rounded-[1.5rem] flex justify-between items-center shadow-sm border border-gray-50">
+                    <div class="bg-white p-5 rounded-[1.8rem] flex justify-between items-center shadow-sm border border-gray-100">
                         <div class="flex flex-col">
                             <div class="flex items-center gap-2">
-                                <span class="font-black text-sm text-gray-800">${item.sub}</span>
-                                <span class="text-[8px] font-black bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">${item.detail || '通用'}</span>
+                                <span class="font-black text-[13px] text-gray-800">${item.sub}</span>
+                                <span class="text-[8px] font-black bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full uppercase">${item.detail || 'Gen'}</span>
                             </div>
-                            <span class="text-[9px] font-bold text-gray-400 mt-1">${item.market} | ${item.date}</span>
+                            <span class="text-[9px] font-bold text-gray-400 mt-1 uppercase tracking-tighter">${item.market} | ${item.date}</span>
                         </div>
-                        <div class="text-right flex flex-col">
+                        <div class="text-right">
                             <span class="font-black text-blue-600 text-base">$${item.price}</span>
-                            <span class="text-[9px] font-black text-gray-300 uppercase">${item.qty} ${item.unit}</span>
+                            <span class="block text-[8px] font-black text-gray-300 uppercase">${item.qty} ${item.unit}</span>
                         </div>
                     </div>
                 `;
             });
         }
 
-        function changeGlobalUnit(val) {
-            gUnit = val;
-            render();
-        }
-
+        function changeGlobalUnit(val) { gUnit = val; render(); }
         initCalendar();
         render();
     </script>
