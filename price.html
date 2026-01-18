@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Life-Hub Analyst MAX</title>
+    <title>Life-Hub Analyst MAX v4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -14,6 +14,7 @@
         .drawer-closed { max-height: 0; opacity: 0; transform: translateY(-10px); }
         .drawer-open { max-height: 400px; opacity: 1; transform: translateY(0); padding-bottom: 1.5rem; }
         #inputDate { opacity: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0; z-index: 10; }
+        input:disabled, select:disabled { background-color: #e5e7eb !important; opacity: 0.5; cursor: not-allowed; }
         input, select { height: 60px; font-size: 16px !important; }
     </style>
 </head>
@@ -32,15 +33,15 @@
             <span class="text-[12px] font-black text-gray-300 uppercase tracking-widest">📊 查看历史录入日历</span>
             <span id="calendarToggleIcon" class="text-white">▼</span>
         </button>
-        <div id="calendarDrawer" class="drawer-closed mt-4 px-2 text-center">
-            <p id="currentMonthStr" class="text-xs font-black text-blue-600 mb-4 uppercase tracking-widest"></p>
-            <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-xs font-bold"></div>
+        <div id="calendarDrawer" class="drawer-closed mt-4 px-2 text-center text-xs font-bold tracking-widest">
+            <p id="currentMonthStr" class="text-blue-600 mb-4 uppercase"></p>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
         </div>
 
         <div class="mt-4 flex items-center gap-3 bg-gray-100 p-1.5 rounded-2xl border-2 border-gray-100">
             <span class="text-[10px] font-black text-gray-400 uppercase ml-3">换算:</span>
             <select id="globalUnitSelect" onchange="changeGlobalUnit(this.value)" class="flex-1 bg-white border-none rounded-xl h-10 px-4 text-xs font-black text-blue-700 outline-none shadow-sm">
-                <option value="original">原始录入单价</option>
+                <option value="original">显示录入原始单价</option>
                 <option value="lb">统一换算：磅 (lb)</option>
                 <option value="kg">统一换算：千克 (kg)</option>
                 <option value="g">统一换算：克 (g)</option>
@@ -48,24 +49,28 @@
         </div>
     </div>
 
-    <div id="statsCard" class="grid grid-cols-1 gap-4 p-5">
+    <div id="statsCard" class="grid grid-cols-1 gap-4 p-5 text-left">
         <div class="bg-blue-600 p-6 rounded-[2.5rem] shadow-2xl shadow-blue-200 text-white relative overflow-hidden">
             <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-2">史低极值 (BEST VALUE)</p>
             <div class="flex items-baseline gap-2"><span class="text-4xl font-[900]" id="minDisplay">$ --</span></div>
-            <div id="minDetail" class="text-[11px] font-bold opacity-80 leading-snug mt-4 border-t border-white/20 pt-4 text-left">选择品种自动对比...</div>
+            <div id="minDetail" class="text-[11px] font-bold opacity-80 leading-snug mt-4 border-t border-white/20 pt-4">选择品种自动对比...</div>
         </div>
         <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-t-8 border-red-500 text-gray-900">
             <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-red-500">史高警报 (PEAK PRICE)</p>
             <div class="flex items-baseline gap-2"><span class="text-4xl font-[900]" id="maxDisplay">$ --</span></div>
-            <div id="maxDetail" class="text-[11px] font-bold text-gray-400 leading-snug mt-4 border-t border-gray-100 pt-4 text-left">选择品种自动对比...</div>
+            <div id="maxDetail" class="text-[11px] font-bold text-gray-400 leading-snug mt-4 border-t border-gray-100 pt-4">选择品种自动对比...</div>
         </div>
     </div>
 
     <div class="px-5 mb-4 flex gap-3 text-left">
         <select id="filterCat" class="flex-1 p-4 bg-white border-2 border-gray-200 rounded-2xl text-[12px] font-black text-gray-800 shadow-sm outline-none" onchange="updateSubSuggestions(true)">
             <option value="">大类对比</option>
-            <option value="肉类">🥩 肉类</option><option value="水果">🍎 水果</option>
-            <option value="蔬菜">🥦 蔬菜</option><option value="奶和鸡蛋">🥛 奶蛋</option>
+            <option value="肉类">🥩 肉类</option>
+            <option value="水果">🍎 水果</option>
+            <option value="蔬菜">🥦 蔬菜</option>
+            <option value="奶蛋">🥛 奶蛋</option>
+            <option value="零食">🍪 零食</option>
+            <option value="其他">📦 其他</option>
         </select>
         <select id="filterSub" class="flex-1 p-4 bg-white border-2 border-gray-200 rounded-2xl text-[12px] font-black text-gray-800 shadow-sm outline-none" onchange="render()">
             <option value="">品种对比</option>
@@ -75,8 +80,12 @@
     <div class="mx-5 p-7 bg-white rounded-[3rem] shadow-2xl space-y-6 border border-gray-50 text-left">
         <select id="mainCategory" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-base font-black outline-none" onchange="updateSubSuggestions(false)">
             <option value="">1. 核心大类</option>
-            <option value="肉类">肉类</option><option value="水果">水果</option>
-            <option value="蔬菜">蔬菜</option><option value="奶和鸡蛋">奶和鸡蛋</option>
+            <option value="肉类">肉类</option>
+            <option value="水果">水果</option>
+            <option value="蔬菜">蔬菜</option>
+            <option value="奶蛋">奶蛋</option>
+            <option value="零食">零食</option>
+            <option value="其他">其他</option>
         </select>
 
         <div class="grid grid-cols-2 gap-4">
@@ -86,8 +95,8 @@
                 <datalist id="subList"></datalist>
             </div>
             <div class="space-y-1">
-                <label class="text-[10px] font-black text-gray-400 ml-2 uppercase">3. 明细</label>
-                <input type="text" id="detailName" placeholder="明细" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-sm font-black outline-none">
+                <label class="text-[10px] font-black text-gray-400 ml-2 uppercase">3. 明细 (自由填写)</label>
+                <input type="text" id="detailName" placeholder="具体描述" class="w-full p-4 border-2 border-gray-100 rounded-2xl bg-gray-50 text-sm font-black outline-none">
             </div>
         </div>
 
@@ -113,10 +122,10 @@
         <datalist id="marketPresets">
             <option value="Costco"><option value="Walmart"><option value="Real Canadian Superstore"><option value="No Frills"><option value="T&T Supermarket">
             <option value="Save-On-Foods"><option value="FreshCo"><option value="Safeway"><option value="Sobeys"><option value="Loblaws">
-            <option value="PriceSmart Foods"><option value="Sungiven Foods"><option value="H-Mart"><option value="Metro"><option value="Giant Tiger">
+            <option value="PriceSmart Foods"><option value="Sungiven Foods"><option value="H-Mart">
         </datalist>
 
-        <button onclick="submitData()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Data</button>
+        <button onclick="submitData()" class="w-full bg-blue-600 text-white h-20 rounded-[2rem] font-[900] text-lg shadow-2xl active:scale-[0.96] transition-all uppercase tracking-widest">Commit Entry</button>
     </div>
 
     <div id="displayList" class="px-5 space-y-4 pb-12 mt-8 text-left"></div>
@@ -126,19 +135,21 @@
             <div class="w-2 h-2 bg-blue-600 rounded-full mb-1"></div>
             <span class="text-[10px] font-black uppercase tracking-widest">Analytics</span>
         </a>
-        <a href="schedule.html" class="flex flex-col items-center text-gray-300">
+        <a href="schedule.html" class="flex flex-col items-center text-gray-400">
             <span class="text-[10px] font-black uppercase tracking-widest">Schedule</span>
         </a>
     </div>
 
     <script>
+        // 词库配置
         const subData = {
             "肉类": ["猪肉", "牛肉", "羊肉", "鸡肉", "鱼类/海鲜", "排骨", "肉碎"],
             "水果": ["苹果", "香蕉", "橙子", "蓝莓", "葡萄", "草莓", "牛油果"],
             "蔬菜": ["西红柿", "土豆", "生菜", "西兰花", "黄瓜", "洋葱", "青椒"],
-            "奶和鸡蛋": ["鲜奶", "鸡蛋", "酸奶", "奶酪", "黄油"]
+            "奶蛋": ["鲜奶", "鸡蛋", "酸奶", "奶酪", "黄油"]
         };
-        let db = JSON.parse(localStorage.getItem('lh_analyst_v3_max_v2') || '[]');
+
+        let db = JSON.parse(localStorage.getItem('lh_analyst_v4_0') || '[]');
         let gUnit = 'original', selectedDay = new Date().toISOString().split('T')[0], isCalendarOpen = false;
 
         function syncDateDisplay(val) { document.getElementById('dateDisplay').innerText = `📅 记录日期: ${val}`; selectedDay = val; }
@@ -151,7 +162,7 @@
         }
 
         function initCalendar() {
-            const now = new Date(); document.getElementById('currentMonthStr').innerText = `Current: ${now.getFullYear()} / ${now.getMonth()+1}`;
+            const now = new Date(); document.getElementById('currentMonthStr').innerText = `Current Ledger: ${now.getFullYear()} / ${now.getMonth()+1}`;
             const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const recordedDates = db.map(i => i.date);
@@ -166,19 +177,47 @@
 
         function updateSubSuggestions(isFilter = false) {
             const cat = isFilter ? document.getElementById('filterCat').value : document.getElementById('mainCategory').value;
-            if(!isFilter) { document.getElementById('subList').innerHTML = ''; if (subData[cat]) subData[cat].forEach(i => document.getElementById('subList').innerHTML += `<option value="${i}">`); }
-            else { document.getElementById('filterSub').innerHTML = '<option value="">品种对比</option>'; if (subData[cat]) subData[cat].forEach(i => document.getElementById('filterSub').innerHTML += `<option value="${i}">${i}</option>`); render(); }
+            const subInput = document.getElementById('subCategory');
+            
+            // 经理逻辑：零食和其它变灰禁用
+            if(!isFilter) {
+                if(cat === "零食" || cat === "其他") {
+                    subInput.disabled = true; subInput.value = "N/A (自由填写明细)";
+                } else {
+                    subInput.disabled = false; subInput.value = "";
+                }
+                document.getElementById('subList').innerHTML = ''; 
+                if (subData[cat]) subData[cat].forEach(i => document.getElementById('subList').innerHTML += `<option value="${i}">`);
+            } else {
+                const fs = document.getElementById('filterSub');
+                fs.innerHTML = '<option value="">品种对比</option>';
+                
+                // 经理逻辑：零食和其它的品种对比显示已买物品
+                if(cat === "零食" || cat === "其他") {
+                    let historyDetail = [...new Set(db.filter(item => item.cat === cat).map(item => item.detail))];
+                    historyDetail.forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`);
+                } else {
+                    if (subData[cat]) subData[cat].forEach(i => fs.innerHTML += `<option value="${i}">${i}</option>`);
+                }
+                render();
+            }
         }
 
         function submitData() {
-            const data = { id: Date.now(), cat: document.getElementById('mainCategory').value, sub: document.getElementById('subCategory').value, detail: document.getElementById('detailName').value, price: parseFloat(document.getElementById('inputPrice').value), qty: parseFloat(document.getElementById('inputQuantity').value), unit: document.getElementById('inputUnit').value, market: document.getElementById('inputMarket').value, date: document.getElementById('inputDate').value };
-            if(!data.sub || !data.price) return alert("MANAGER: FIELDS MISSING!"); db.push(data); localStorage.setItem('lh_analyst_v3_max_v2', JSON.stringify(db)); initCalendar(); render();
+            const cat = document.getElementById('mainCategory').value;
+            const data = { id: Date.now(), cat: cat, sub: (cat === "零食" || cat === "其他") ? "自由项" : document.getElementById('subCategory').value, detail: document.getElementById('detailName').value, price: parseFloat(document.getElementById('inputPrice').value), qty: parseFloat(document.getElementById('inputQuantity').value), unit: document.getElementById('inputUnit').value, market: document.getElementById('inputMarket').value, date: document.getElementById('inputDate').value };
+            if(!data.detail || !data.price) return alert("MANAGER: CRITICAL FIELDS MISSING!");
+            db.push(data); localStorage.setItem('lh_analyst_v4_0', JSON.stringify(db)); initCalendar(); render();
         }
 
         function render(isDayFilter = false) {
             const fCat = document.getElementById('filterCat').value, fSub = document.getElementById('filterSub').value;
-            let filtered = db.filter(item => isDayFilter ? item.date === selectedDay : (!fCat || item.cat === fCat) && (!fSub || item.sub === fSub));
-            let calcList = db.filter(item => fSub ? item.sub === fSub : fCat ? item.cat === fCat : false);
+            let filtered = db.filter(item => isDayFilter ? item.date === selectedDay : (!fCat || item.cat === fCat) && (!fSub || item.sub === fSub || item.detail === fSub));
+            
+            let calcList = db.filter(item => {
+                if (fCat === "零食" || fCat === "其他") return item.cat === fCat && item.detail === fSub;
+                return fSub ? item.sub === fSub : fCat ? item.cat === fCat : false;
+            });
 
             if(calcList.length > 0) {
                 let unitPrices = calcList.map(item => {
@@ -191,15 +230,19 @@
                 });
                 const min = unitPrices.reduce((p, c) => p.val < c.val ? p : c), max = unitPrices.reduce((p, c) => p.val > c.val ? p : c);
                 document.getElementById('minDisplay').innerText = `$${min.val.toFixed(2)}`;
-                document.getElementById('minDetail').innerHTML = `<span class="text-white font-black">${min.raw.sub} ${min.raw.detail}</span><br>${min.raw.market} | ${min.raw.date}`;
+                document.getElementById('minDetail').innerHTML = `<span class="font-black">${min.raw.sub === '自由项' ? min.raw.detail : min.raw.sub}</span><br>${min.raw.market} | ${min.raw.date}`;
                 document.getElementById('maxDisplay').innerText = `$${max.val.toFixed(2)}`;
-                document.getElementById('maxDetail').innerHTML = `<span class="text-red-500 font-black">${max.raw.sub} ${max.raw.detail}</span><br>${max.raw.market} | ${max.raw.date}`;
+                document.getElementById('maxDetail').innerHTML = `<span class="text-red-500 font-black">${max.raw.sub === '自由项' ? max.raw.detail : max.raw.sub}</span><br>${max.raw.market} | ${max.raw.date}`;
+            } else {
+                document.getElementById('minDisplay').innerText = "$ --"; document.getElementById('maxDisplay').innerText = "$ --";
             }
+            
             document.getElementById('displayList').innerHTML = '';
             filtered.sort((a,b) => b.id - a.id).forEach(item => {
-                document.getElementById('displayList').innerHTML += `<div class="bg-white p-6 rounded-[2.2rem] shadow-md flex justify-between items-center"><div class="flex flex-col"><div class="flex items-center gap-2 mb-1"><span class="font-[900] text-[15px]">${item.sub}</span><span class="text-[9px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-lg uppercase">${item.detail || 'Gen'}</span></div><span class="text-[10px] font-black text-gray-400 uppercase">${item.market} | ${item.date}</span></div><div class="text-right"><span class="font-[900] text-blue-600 text-xl tracking-tighter">$${item.price.toFixed(2)}</span><span class="block text-[10px] font-black text-gray-300 uppercase">${item.qty} ${item.unit}</span></div></div>`;
+                document.getElementById('displayList').innerHTML += `<div class="bg-white p-6 rounded-[2.2rem] shadow-md flex justify-between items-center"><div class="flex flex-col"><div class="flex items-center gap-2 mb-1"><span class="font-[900] text-[15px]">${item.sub === '自由项' ? item.detail : item.sub}</span><span class="text-[9px] font-black bg-gray-100 text-gray-500 px-2 py-1 rounded-lg uppercase">${item.sub === '自由项' ? 'Other' : item.detail || 'Gen'}</span></div><span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">${item.market} | ${item.date}</span></div><div class="text-right"><span class="font-[900] text-blue-600 text-xl tracking-tighter">$${item.price.toFixed(2)}</span><span class="block text-[10px] font-black text-gray-300 uppercase">${item.qty} ${item.unit}</span></div></div>`;
             });
         }
+        function changeGlobalUnit(val) { gUnit = val; render(); }
         initCalendar(); render();
     </script>
 </body>
