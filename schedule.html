@@ -3,1117 +3,1402 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>生活中心｜课程与比赛</title>
+  <title>Life-Hub｜Schedule</title>
   <style>
     :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --text:#0b1220;
-      --muted:#6b7280;
-      --line:#e6ebf2;
-      --primary:#2563eb;     /* 蓝 */
-      --danger:#ef4444;      /* 红 */
-      --shadow: 0 10px 30px rgba(16, 24, 40, .08);
-      --radius: 16px;
+      --bg:#0b1220;
+      --panel:#101a2e;
+      --panel2:#0e1830;
+      --text:#e9eefc;
+      --muted:#a9b5d6;
+      --line:rgba(255,255,255,.10);
+      --shadow:0 16px 40px rgba(0,0,0,.35);
+      --accent:#3b82f6;
+      --accent2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --btn:#2563eb;
+      --btnHover:#1d4ed8;
+      --chip:#1e2a46;
+      --chipOn:#2b6ef6;
+      --chipOn2:#16a34a;
+      --today:#fbbf24;
     }
+
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",Arial;
-      background:var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1000px 600px at 10% 10%, rgba(59,130,246,.25), transparent 60%),
+                  radial-gradient(900px 500px at 85% 20%, rgba(34,197,94,.18), transparent 55%),
+                  var(--bg);
+      min-height:100vh;
+    }
+
+    /* 顶部栏（保持你习惯的：左侧标题/说明 + 右侧切换） */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(11,18,32,.86), rgba(11,18,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width:1200px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:space-between;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.2px;
+      font-weight:700;
+    }
+    .brand .sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .mode-switch{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .seg{
+      display:flex;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .seg button{
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+      transition:.15s ease;
+    }
+    .seg button.active{
+      background:rgba(59,130,246,.20);
+      color:var(--text);
+      box-shadow: 0 10px 18px rgba(59,130,246,.12);
+    }
+
+    .right-tools{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .pill{
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      border-radius:12px;
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .save-dot{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:99px;
+      background:rgba(255,255,255,.25);
+    }
+    .dot.ok{background:rgba(34,197,94,.9)}
+    .dot.warn{background:rgba(245,158,11,.95)}
+
+    /* 主布局：左列表 + 右编辑区（保持不变） */
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:14px 16px 26px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel-header{
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:rgba(16,26,46,.55);
+    }
+    .panel-header .title{
+      font-weight:800;
+      font-size:13px;
+      color:var(--text);
+      letter-spacing:.2px;
+    }
+    .panel-body{padding:12px}
+
+    /* 左侧列表 */
+    .list-controls{
+      display:flex;
+      gap:8px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:12px;
+      transition:.15s ease;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(0)}
+    .btn.primary{
+      background:linear-gradient(180deg, rgba(37,99,235,.95), rgba(29,78,216,.95));
+      border-color:rgba(59,130,246,.55);
+      box-shadow:0 14px 24px rgba(37,99,235,.22);
+    }
+    .btn.danger{
+      background:linear-gradient(180deg, rgba(239,68,68,.95), rgba(185,28,28,.95));
+      border-color:rgba(239,68,68,.45);
+      box-shadow:0 14px 24px rgba(239,68,68,.18);
+    }
+
+    .search{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    .search::placeholder{color:rgba(233,238,252,.55)}
+
+    .items{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      max-height: 70vh;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .item{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+      padding:10px 10px;
+      cursor:pointer;
+      transition:.15s ease;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .item:hover{transform: translateY(-1px); background:rgba(0,0,0,.24)}
+    .item.active{
+      border-color:rgba(59,130,246,.65);
+      box-shadow:0 16px 24px rgba(59,130,246,.14);
+      background:rgba(59,130,246,.10);
+    }
+    .badge{
+      min-width:36px;
+      height:36px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
       color:var(--text);
     }
-    a{color:inherit}
-    .wrap{
-      max-width: 1180px;
-      margin: 18px auto;
-      padding: 0 14px 24px;
+    .meta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+      flex:1;
     }
-    .topbar{
+    .meta .line1{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      min-width:0;
+    }
+    .meta .name{
+      font-weight:900;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 210px;
+    }
+    .tag{
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .meta .line2{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 260px;
+    }
+
+    /* 右侧编辑区 */
+    .form{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:980px){
+      .row{grid-template-columns:1fr}
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .input, .textarea, .select{
+      width:100%;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+      color:var(--text);
+      padding:10px 12px;
+      font-size:13px;
+      outline:none;
+    }
+    .textarea{min-height:110px; resize:vertical}
+
+    /* === 重点修复：日期按钮醒目 + 位置明显 === */
+    .date-bar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding: 14px 16px;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .title{
-      display:flex; align-items:center; gap:10px;
-    }
-    .title h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing:.2px;
-    }
-    .tabs{
-      display:flex; gap:8px;
-      background:#f1f5ff;
-      border:1px solid #dbe7ff;
-      padding:6px;
-      border-radius: 999px;
-    }
-    .tabbtn{
-      border:none;
-      background:transparent;
-      padding:8px 12px;
-      border-radius:999px;
-      font-weight:600;
-      cursor:pointer;
-      color:#2453c9;
-    }
-    .tabbtn.active{
-      background: var(--primary);
-      color:#fff;
-      box-shadow: 0 6px 18px rgba(37,99,235,.25);
-    }
-    .actions{
-      display:flex; gap:10px; align-items:center;
-    }
-    .btn{
-      border:none;
-      cursor:pointer;
       padding:10px 12px;
-      border-radius: 12px;
-      font-weight:700;
-      background: var(--primary);
-      color:#fff;
-      box-shadow: 0 8px 22px rgba(37,99,235,.25);
-      white-space:nowrap;
+      border:1px solid rgba(59,130,246,.35);
+      background:linear-gradient(180deg, rgba(37,99,235,.18), rgba(37,99,235,.10));
+      border-radius:16px;
+      box-shadow:0 20px 36px rgba(37,99,235,.16);
     }
-    .btn.secondary{
-      background:#ffffff;
-      color:var(--text);
-      border:1px solid var(--line);
-      box-shadow:none;
-    }
-    .grid{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap: 14px;
-    }
-    @media (max-width: 980px){
-      .grid{grid-template-columns: 1fr; }
-    }
-
-    .panel{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .panelHead{
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .panelHead .hint{
-      color:var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    /* 左侧列表 */
-    .list{
-      padding: 10px;
+    .date-left{
       display:flex;
       flex-direction:column;
-      gap:10px;
-      max-height: 68vh;
-      overflow:auto;
+      gap:3px;
+      min-width:0;
     }
-    .cardItem{
-      border:1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 12px;
-      background: #fff;
+    .date-left .big{
+      font-weight:1000;
+      letter-spacing:.2px;
+      font-size:14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .date-left .small{
+      font-size:12px;
+      color:rgba(233,238,252,.70);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .date-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .date-btn{
+      border:1px solid rgba(59,130,246,.55);
+      background:linear-gradient(180deg, rgba(37,99,235,.98), rgba(29,78,216,.98));
+      color:#fff;
+      padding:10px 14px;
+      border-radius:14px;
       cursor:pointer;
-      transition: transform .05s ease, border-color .15s ease;
-    }
-    .cardItem:hover{ border-color:#cdd9ee; }
-    .cardItem.active{
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.14);
-    }
-    .badge{
+      font-weight:1000;
+      font-size:13px;
+      box-shadow:0 18px 28px rgba(37,99,235,.26);
+      transition:.15s ease;
       display:inline-flex;
       align-items:center;
-      gap:6px;
-      padding: 4px 10px;
-      border-radius:999px;
-      font-size: 12px;
-      font-weight:800;
+      gap:8px;
+    }
+    .date-btn:hover{transform: translateY(-1px); filter:brightness(1.03)}
+    .date-btn:active{transform: translateY(0)}
+    .date-btn .spark{
+      width:10px;height:10px;border-radius:99px;
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 0 0 6px rgba(255,255,255,.12);
+    }
+    .ghost-btn{
       border:1px solid var(--line);
-      background:#f8fafc;
-      color:#334155;
-    }
-    .badge.course{ background:#ecf3ff; border-color:#d7e6ff; color:#1d4ed8; }
-    .badge.match{ background:#fff1f2; border-color:#ffe4e6; color:#be123c; }
-
-    .itemTitle{
-      margin: 8px 0 2px;
-      font-size: 18px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
       font-weight:900;
-      letter-spacing:.2px;
+      font-size:12px;
     }
-    .itemSub{
-      color: var(--muted);
-      font-size: 12px;
+
+    /* 时间点多选 chips */
+    .chips{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      margin-top: 6px;
     }
-
-    /* 右侧详情 */
-    .detail{
-      padding: 16px;
-    }
-    .empty{
-      padding: 28px 16px;
-      color: var(--muted);
-      text-align:center;
-    }
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    @media (max-width: 680px){
-      .row{grid-template-columns:1fr;}
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .label{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight:700;
-    }
-    input, select, textarea{
-      width:100%;
-      padding: 12px 12px;
-      border-radius: 12px;
+    .chip{
+      user-select:none;
       border:1px solid var(--line);
-      font-size: 14px;
-      outline:none;
-      background:#fff;
-    }
-    textarea{ min-height: 90px; resize: vertical; }
-    input:focus, select:focus, textarea:focus{
-      border-color:#b7cdfd;
-      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-    }
-    .inline{
-      display:flex; gap:10px; align-items:center;
-    }
-    .inline .fixedWord{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:999px;
+      cursor:pointer;
       font-weight:900;
-      font-size: 18px;
-      white-space:nowrap;
+      font-size:12px;
+      transition:.12s ease;
+    }
+    .chip:hover{transform: translateY(-1px)}
+    .chip.on{
+      background:rgba(59,130,246,.22);
+      border-color:rgba(59,130,246,.55);
+      box-shadow:0 16px 20px rgba(59,130,246,.14);
     }
 
-    .infoBox{
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background:#f8fbff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .infoBox .left{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      color:#1144c7;
-      font-weight:800;
-      font-size: 13px;
-    }
-    .pill{
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--primary);
-      color:#fff;
-      font-weight:900;
-      font-size: 12px;
+    /* 模式不同：比赛用绿色高亮 */
+    .mode-competition .seg button.active{background:rgba(34,197,94,.22)}
+    .mode-competition .date-bar{border-color:rgba(34,197,94,.35); background:linear-gradient(180deg, rgba(34,197,94,.16), rgba(34,197,94,.08)); box-shadow:0 20px 36px rgba(34,197,94,.14)}
+    .mode-competition .date-btn{border-color:rgba(34,197,94,.55); background:linear-gradient(180deg, rgba(22,163,74,.98), rgba(21,128,61,.98)); box-shadow:0 18px 28px rgba(34,197,94,.22)}
+    .mode-competition .chip.on{background:rgba(34,197,94,.22); border-color:rgba(34,197,94,.55); box-shadow:0 16px 20px rgba(34,197,94,.14)}
+
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin:6px 0;
     }
 
-    .dangerPill{
-      background: var(--danger);
-    }
-
-    .btnRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 14px;
-    }
-    .btn.small{
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight:900;
-    }
-
-    /* 日历弹窗 */
-    .modalMask{
-      position:fixed; inset:0;
-      background: rgba(15, 23, 42, .55);
+    /* === 日历浮窗（Modal）=== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
       display:none;
       align-items:center;
       justify-content:center;
-      padding: 18px;
-      z-index: 9999;
+      z-index:1000;
+      padding:16px;
     }
-    .modalMask.show{ display:flex; }
+    .modal-backdrop.show{display:flex}
     .modal{
-      width:min(980px, 100%);
-      background:#fff;
-      border-radius: 18px;
-      box-shadow: 0 22px 80px rgba(0,0,0,.28);
+      width:min(520px, 100%);
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(16,26,46,.95), rgba(14,24,48,.95));
+      box-shadow:0 30px 70px rgba(0,0,0,.55);
       overflow:hidden;
     }
-    .modalTop{
+    .modal-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.18);
     }
-    .modalTop .modalTitle{
-      font-weight: 1000;
-      font-size: 18px;
-    }
-    .modalTop .close{
-      border:none;
-      background:transparent;
-      font-size: 22px;
-      cursor:pointer;
-      color:#64748b;
-    }
-    .modalHint{
-      padding: 12px 16px;
-      background: var(--primary);
-      color:#fff;
-      font-weight:900;
-      text-align:center;
-    }
-    .calHead{
-      display:grid;
-      grid-template-columns: 50px 1fr 50px;
-      align-items:center;
-      padding: 14px 16px 8px;
-      gap: 10px;
-    }
-    .calHead .navBtn{
-      border:none;
-      background:transparent;
-      cursor:pointer;
-      font-size: 22px;
-      color:#1e40af;
-      font-weight:900;
-    }
-    .calHead .ym{
-      text-align:center;
+    .modal-title{
       font-weight:1000;
-      letter-spacing:.5px;
+      font-size:13px;
+      color:var(--text);
     }
-
-    .dow{
+    .icon-btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+    }
+    .cal{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .cal-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .cal-top .nav{
+      display:flex; gap:8px; align-items:center;
+    }
+    .cal-month{
+      font-weight:1000;
+      font-size:14px;
+      letter-spacing:.3px;
+    }
+    .week{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
-      padding: 0 16px 6px;
-      gap: 8px;
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight:800;
+      gap:8px;
+      color:rgba(233,238,252,.70);
+      font-weight:900;
+      font-size:12px;
+      padding:0 2px;
     }
-    .calGrid{
+    .grid-days{
       display:grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      padding: 10px 16px 18px;
+      gap:8px;
     }
-    .dayCell{
+    .day{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:14px;
+      padding:10px 0;
+      text-align:center;
+      cursor:pointer;
+      font-weight:900;
+      font-size:13px;
+      transition:.12s ease;
       position:relative;
-      border:1px solid transparent;
-      border-radius: 12px;
-      min-height: 54px;
-      padding: 10px 10px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
-      cursor:pointer;
-      user-select:none;
-      background:#fff;
-      transition: transform .05s ease, background .12s ease, border-color .12s ease;
     }
-    .dayCell:hover{ border-color:#dbeafe; background:#f8fbff; }
-    .dayNum{
-      font-weight: 1000;
-      font-size: 14px;
-      color:#0f172a;
+    .day:hover{transform: translateY(-1px); background:rgba(255,255,255,.07)}
+    .day.mute{
+      opacity:.35;
+      cursor:default;
     }
-    .dayCell.muted .dayNum{ color:#cbd5e1; }
-    /* 选中/标记：改为“色块高亮”（满足修改2） */
-    .dayCell.selectedBlue{
-      background: var(--primary);
-      border-color: var(--primary);
+    .day.mute:hover{transform:none; background:rgba(255,255,255,.04)}
+    .day.today::after{
+      content:"";
+      position:absolute;
+      top:8px; right:10px;
+      width:7px;height:7px;border-radius:99px;
+      background:var(--today);
+      box-shadow:0 0 0 5px rgba(251,191,36,.12);
     }
-    .dayCell.selectedBlue .dayNum{ color:#fff; }
-    .dayCell.selectedRed{
-      background: var(--danger);
-      border-color: var(--danger);
+    .day.sel{
+      border-color:rgba(59,130,246,.65);
+      background:rgba(59,130,246,.20);
+      box-shadow:0 18px 22px rgba(59,130,246,.18);
     }
-    .dayCell.selectedRed .dayNum{ color:#fff; }
+    .mode-competition .day.sel{
+      border-color:rgba(34,197,94,.65);
+      background:rgba(34,197,94,.20);
+      box-shadow:0 18px 22px rgba(34,197,94,.16);
+    }
 
-    .modalBottom{
-      padding: 14px 16px;
-      border-top: 1px solid var(--line);
+    .modal-foot{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 10px;
-      background:#fff;
+      gap:10px;
+      padding:12px 12px;
+      border-top:1px solid var(--line);
+      background:rgba(0,0,0,.16);
     }
-    .modalBottom .summary{
-      color:#334155;
-      font-weight:800;
-      font-size: 13px;
+    .hint{
+      font-size:12px;
+      color:rgba(233,238,252,.70);
     }
-    .bigConfirm{
-      width: 100%;
-      border:none;
-      background: var(--primary);
-      color:#fff;
-      font-weight:1000;
-      padding: 14px 16px;
-      font-size: 14px;
-      cursor:pointer;
-      border-radius: 14px;
-      box-shadow: 0 10px 26px rgba(37,99,235,.25);
+
+    /* 右侧底部操作区 */
+    .actions{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
     }
-    .bigConfirm:active{ transform: translateY(1px); }
 
     .mini{
       font-size:12px;
-      color:var(--muted);
-      margin-top: 6px;
-      line-height: 1.5;
+      color:rgba(233,238,252,.75);
     }
   </style>
 </head>
 
 <body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>Life-Hub · Schedule</h1>
+        <div class="sub">左侧选择条目，右侧编辑；自动保存到浏览器本地（localStorage）</div>
+      </div>
+
+      <div class="right-tools">
+        <div class="seg" role="tablist" aria-label="mode">
+          <button id="modeCourse" class="active" type="button" role="tab" aria-selected="true">课程</button>
+          <button id="modeComp" type="button" role="tab" aria-selected="false">比赛</button>
+        </div>
+
+        <div class="pill save-dot" title="自动保存状态">
+          <span id="saveDot" class="dot ok"></span>
+          <span id="saveText">已保存</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="wrap">
-    <div class="topbar">
-      <div class="title">
-        <h1>生活中心</h1>
-      </div>
-
-      <div class="tabs" role="tablist" aria-label="切换类型">
-        <button class="tabbtn active" id="tabCourse" type="button">常规周期（课程）</button>
-        <button class="tabbtn" id="tabMatch" type="button">比赛变动（比赛）</button>
-      </div>
-
-      <div class="actions">
-        <button class="btn secondary" id="btnExport" type="button">导出备份</button>
-        <button class="btn" id="btnAdd" type="button">新增</button>
-      </div>
-    </div>
-
     <div class="grid">
-      <!-- 左：列表 -->
+      <!-- 左侧列表 -->
       <div class="panel">
-        <div class="panelHead">
-          <div>
-            <div style="font-weight:1000;">条目列表</div>
-            <div class="hint">点击条目进行编辑与查看（自动保存）</div>
+        <div class="panel-header">
+          <div class="title">条目列表</div>
+          <div class="list-controls">
+            <button id="addBtn" class="btn primary" type="button">+ 新建</button>
+            <button id="delBtn" class="btn danger" type="button">删除</button>
           </div>
-          <button class="btn secondary small" id="btnDelete" type="button" disabled>删除</button>
         </div>
-        <div class="list" id="itemList"></div>
+        <div class="panel-body">
+          <input id="search" class="search" placeholder="搜索：名称 / 备注 / 日期…" />
+          <div class="hr"></div>
+          <div id="items" class="items"></div>
+        </div>
       </div>
 
-      <!-- 右：详情 -->
+      <!-- 右侧编辑区 -->
       <div class="panel">
-        <div class="panelHead">
-          <div>
-            <div style="font-weight:1000;">编辑区</div>
-            <div class="hint">日期/时间/月份范围都支持“点选”，减少输入</div>
-          </div>
-          <button class="btn secondary small" id="btnClear" type="button">清空本机数据</button>
+        <div class="panel-header">
+          <div class="title" id="editorTitle">编辑区</div>
+          <div class="mini" id="editorSub">选择一个条目开始编辑</div>
         </div>
-        <div class="detail" id="detailArea">
-          <div class="empty">请选择左侧一个条目，或点击右上角“新增”。</div>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="panel-body">
+          <div class="form" id="form" style="display:none;">
+            <!-- 月份 + 日期按钮（醒目） -->
+            <div class="row">
+              <div>
+                <label>月份</label>
+                <select id="monthSel" class="select"></select>
+              </div>
 
-  <!-- 日历弹窗 -->
-  <div class="modalMask" id="modalMask" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modalTop">
-        <div class="modalTitle" id="modalTitle">多选上课日期</div>
-        <button class="close" id="modalClose" type="button">×</button>
-      </div>
-      <div class="modalHint">请点击下方日期进行选择 / 取消（已选日期会高亮）</div>
-
-      <!-- 修改1：显示年/月；可切换 -->
-      <div class="calHead">
-        <button class="navBtn" id="prevMonth" type="button">◀</button>
-        <div class="ym" id="ymLabel">2026 / 01</div>
-        <button class="navBtn" id="nextMonth" type="button">▶</button>
-      </div>
-
-      <div class="dow">
-        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-      </div>
-      <div class="calGrid" id="calGrid"></div>
-
-      <div class="modalBottom">
-        <div class="summary" id="calSummary">已选 0 天</div>
-        <button class="bigConfirm" id="calConfirm" type="button">确认选择</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    /***********************
-     * 数据结构
-     ***********************/
-    const STORAGE_KEY = "lifehub_schedule_v2";
-
-    // type: "course" | "match"
-    // title: 课程/比赛名称（课程：完整标题；比赛：只存“某某”，显示为“某某 比赛”）
-    // monthFrom: 1-12
-    // monthTo: 1-12
-    // startTime: "12:00"
-    // endTime: "13:00"
-    // dates: ["YYYY-MM-DD", ...]  // 修改1：必须完整年月日
-    // colorMode: "blue" | "red"   // 修改2：高亮颜色
-    // place: string
-    // note: string
-    let state = {
-      view: "course",
-      items: [],
-      selectedId: null
-    };
-
-    function uid(){
-      return Math.random().toString(16).slice(2) + Date.now().toString(16);
-    }
-
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          const parsed = JSON.parse(raw);
-          if(parsed && typeof parsed === "object"){
-            state = { ...state, ...parsed };
-          }
-        }
-      }catch(e){}
-      // 初始化默认数据（如果空）
-      if(!Array.isArray(state.items)) state.items = [];
-      if(!state.view) state.view = "course";
-    }
-
-    function save(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    /***********************
-     * UI：列表渲染
-     ***********************/
-    const $ = (id)=>document.getElementById(id);
-
-    function formatMonthRange(mf, mt){
-      if(!mf && !mt) return "月份范围未设置";
-      if(mf && mt) return `${mf}月 → ${mt}月`;
-      if(mf) return `${mf}月起`;
-      return `至${mt}月`;
-    }
-
-    function formatDatesShort(dates){
-      if(!dates || dates.length===0) return "未选日期";
-      // 显示最近 3 个
-      const arr = [...dates].sort();
-      const head = arr.slice(0,3).join("、");
-      return arr.length<=3 ? head : `${head}…（共${arr.length}天）`;
-    }
-
-    function itemDisplayTitle(it){
-      // 修改6：比赛显示为 “某某 + 固定‘比赛’”
-      if(it.type === "match"){
-        const name = (it.title || "").trim() || "（未命名）";
-        return `${name} 比赛`;
-      }
-      return (it.title || "").trim() || "（未命名课程）";
-    }
-
-    function badgeText(it){
-      // 修改3：按标签显示：课程/比赛
-      return it.type === "match" ? "比赛" : "课程";
-    }
-
-    function badgeClass(it){
-      return it.type === "match" ? "match" : "course";
-    }
-
-    function renderList(){
-      const list = $("itemList");
-      list.innerHTML = "";
-
-      const items = state.items.filter(x => x.type === state.view);
-      if(items.length === 0){
-        const div = document.createElement("div");
-        div.className = "empty";
-        div.textContent = "暂无条目。点右上角“新增”。";
-        list.appendChild(div);
-        $("btnDelete").disabled = true;
-        return;
-      }
-
-      items.forEach(it=>{
-        const card = document.createElement("div");
-        card.className = "cardItem" + (state.selectedId === it.id ? " active" : "");
-        card.onclick = ()=>{
-          state.selectedId = it.id;
-          save();
-          render();
-        };
-
-        const badge = document.createElement("span");
-        badge.className = `badge ${badgeClass(it)}`;
-        badge.textContent = badgeText(it); // 修改3
-
-        const title = document.createElement("div");
-        title.className = "itemTitle";
-        title.textContent = itemDisplayTitle(it);
-
-        const sub = document.createElement("div");
-        sub.className = "itemSub";
-        const p1 = document.createElement("span");
-        p1.textContent = formatMonthRange(it.monthFrom, it.monthTo); // 修改5：会由选择框生成
-        const p2 = document.createElement("span");
-        // 修改4：显示开始/结束
-        const st = it.startTime ? `开始 ${it.startTime}` : "开始未设";
-        const et = it.endTime ? `结束 ${it.endTime}` : "结束未设";
-        p2.textContent = `${st} ｜ ${et}`;
-        const p3 = document.createElement("span");
-        p3.textContent = formatDatesShort(it.dates);
-
-        sub.appendChild(p1);
-        sub.appendChild(p2);
-        sub.appendChild(p3);
-
-        card.appendChild(badge);
-        card.appendChild(title);
-        card.appendChild(sub);
-        list.appendChild(card);
-      });
-
-      $("btnDelete").disabled = !state.selectedId || !state.items.find(x=>x.id===state.selectedId && x.type===state.view);
-    }
-
-    /***********************
-     * UI：详情渲染
-     ***********************/
-    function monthSelectHTML(id, value){
-      const opts = [];
-      opts.push(`<option value="">—</option>`);
-      for(let i=1;i<=12;i++){
-        opts.push(`<option value="${i}" ${String(value)===String(i)?"selected":""}>${i}月</option>`);
-      }
-      return `<select id="${id}">${opts.join("")}</select>`;
-    }
-
-    function timeInput(id, value){
-      const v = value || "";
-      return `<input id="${id}" type="time" value="${escapeHtml(v)}" />`;
-    }
-
-    function escapeHtml(s){
-      return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    function renderDetail(){
-      const area = $("detailArea");
-      const it = state.items.find(x=>x.id===state.selectedId);
-
-      if(!it || it.type !== state.view){
-        area.innerHTML = `<div class="empty">请选择左侧一个条目，或点击右上角“新增”。</div>`;
-        return;
-      }
-
-      // 修改6：比赛名称输入框 + 固定“比赛”
-      // 课程：普通输入框
-      const titleField = it.type === "match"
-        ? `
-          <div class="field">
-            <div class="label">比赛名称（可输入，也可点选历史）</div>
-            <div class="inline">
-              <input id="titleInput" list="titleHistory" placeholder="例如：校队 / 联赛 / 友谊" value="${escapeHtml(it.title||"")}" />
-              <span class="fixedWord">比赛</span>
+              <!-- 日期展示 + 强化按钮（更显眼 + 靠上） -->
+              <div>
+                <label>日期</label>
+                <div class="date-bar">
+                  <div class="date-left">
+                    <div class="big" id="dateBig">未选择日期</div>
+                    <div class="small" id="dateSmall">点击右侧按钮选择（会弹出日历）</div>
+                  </div>
+                  <div class="date-actions">
+                    <button id="pickDateBtn" class="date-btn" type="button">
+                      <span class="spark"></span>
+                      选择日期
+                    </button>
+                    <button id="todayBtn" class="ghost-btn" type="button">今天</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <datalist id="titleHistory"></datalist>
-            <div class="mini">提示：输入框里会出现你曾经记录过的课程/比赛名称，方便复用。</div>
-          </div>
-        `
-        : `
-          <div class="field">
-            <div class="label">课程名称</div>
-            <input id="titleInput" placeholder="例如：篮球课 / 数学补习" value="${escapeHtml(it.title||"")}" />
-          </div>
-        `;
 
-      // 修改5：月份范围两个选择框（开始月/结束月）
-      const monthRange = `
-        <div class="row">
-          <div class="field">
-            <div class="label">开始月份</div>
-            ${monthSelectHTML("monthFrom", it.monthFrom)}
-          </div>
-          <div class="field">
-            <div class="label">结束月份</div>
-            ${monthSelectHTML("monthTo", it.monthTo)}
-          </div>
-        </div>
-      `;
+            <!-- 课程/比赛名称（比赛：某某是输入框，比赛是界面文字自动显示） -->
+            <div class="row">
+              <div>
+                <label id="nameLabel">课程名称</label>
+                <input id="nameInput" class="input" placeholder="例如：Math / ELL / Basketball…" list="nameHistory" />
+                <datalist id="nameHistory"></datalist>
+              </div>
+              <div>
+                <label>类型</label>
+                <input id="typeReadonly" class="input" readonly />
+              </div>
+            </div>
 
-      // 修改4：开始/结束时间标签
-      const timeRange = `
-        <div class="row">
-          <div class="field">
-            <div class="label">开始时间</div>
-            ${timeInput("startTime", it.startTime)}
-          </div>
-          <div class="field">
-            <div class="label">结束时间</div>
-            ${timeInput("endTime", it.endTime)}
-          </div>
-        </div>
-      `;
+            <!-- 时间点多选 -->
+            <div>
+              <label>时间点（可多选）</label>
+              <div id="chips" class="chips"></div>
+              <div class="mini" style="margin-top:6px;color:rgba(233,238,252,.65)">提示：点击可选中/取消选中，会高亮保存</div>
+            </div>
 
-      const dateBox = `
-        <div class="infoBox">
-          <div class="left">📅 点击真实日历多选上课日期</div>
-          <div class="pill" id="pickedCount">${(it.dates?.length||0)} 天</div>
-        </div>
-        <div class="mini">日期会保存为 <b>YYYY-MM-DD</b>（完整年月日）。</div>
-      `;
+            <div class="row">
+              <div>
+                <label>地点</label>
+                <input id="locInput" class="input" placeholder="例如：Langley Event Center / School…" />
+              </div>
+              <div>
+                <label>备注标签</label>
+                <input id="tagInput" class="input" placeholder="例如：重要 / 需准备 / 带水…" />
+              </div>
+            </div>
 
-      const placeNote = `
-        <div class="row">
-          <div class="field">
-            <div class="label">地点</div>
-            <input id="place" placeholder="例如：Lightning Event Center / 学校体育馆" value="${escapeHtml(it.place||"")}" />
+            <div>
+              <label>备注</label>
+              <textarea id="noteInput" class="textarea" placeholder="写下要带的东西、注意事项、比赛对手、集合时间…"></textarea>
+            </div>
+
+            <div class="actions">
+              <button id="dupBtn" class="btn" type="button">复制条目</button>
+              <button id="clearBtn" class="btn" type="button">清空本条填写</button>
+            </div>
           </div>
-          <div class="field">
-            <div class="label">标记颜色（用于日历高亮）</div>
-            <select id="colorMode">
-              <option value="blue" ${it.colorMode==="blue"?"selected":""}>蓝底白字</option>
-              <option value="red" ${it.colorMode==="red"?"selected":""}>红底白字</option>
-            </select>
+
+          <div id="empty" class="mini" style="color:rgba(233,238,252,.70);">
+            你还没有选择条目。左侧点一个，或点“+ 新建”。
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="field" style="margin-top:12px;">
-          <div class="label">备注（可选，尽量一行）</div>
-          <textarea id="note" placeholder="例如：带水壶/球鞋；或集合地点…">${escapeHtml(it.note||"")}</textarea>
-        </div>
-      `;
+  <!-- 日历浮窗（Modal） -->
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="选择日期">
+      <div class="modal-head">
+        <div class="modal-title">选择日期</div>
+        <button id="closeModal" class="icon-btn" type="button">关闭</button>
+      </div>
 
-      area.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div>
-            <span class="badge ${badgeClass(it)}">${badgeText(it)}</span>
-            <div style="margin-top:8px; font-weight:1000; font-size:20px;">${escapeHtml(itemDisplayTitle(it))}</div>
+      <div class="cal">
+        <div class="cal-top">
+          <div class="nav">
+            <button id="prevMonth" class="icon-btn" type="button">◀</button>
+            <button id="nextMonth" class="icon-btn" type="button">▶</button>
           </div>
-          <button class="btn secondary small" id="btnOpenCal" type="button">选择日期</button>
+          <div class="cal-month" id="calMonthText">—</div>
+          <button id="goToday" class="icon-btn" type="button">今天</button>
         </div>
 
-        <div style="margin-top:14px;">${titleField}</div>
-        ${monthRange}
-        ${timeRange}
-        ${dateBox}
-        ${placeNote}
-
-        <div class="btnRow">
-          <button class="btn secondary small" id="btnDup" type="button">复制一份</button>
-          <button class="btn small" id="btnDone" type="button">完成</button>
+        <div class="week">
+          <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
         </div>
-      `;
 
-      // 填充历史（修改6）
-      const history = collectTitleHistory();
-      const dl = document.getElementById("titleHistory");
-      if(dl){
-        dl.innerHTML = history.map(t => `<option value="${escapeHtml(t)}"></option>`).join("");
-      }
+        <div id="calGrid" class="grid-days"></div>
+      </div>
 
-      // 绑定事件：自动保存
-      bindDetailEvents(it);
-    }
+      <div class="modal-foot">
+        <div class="hint" id="calHint">点击某一天即可选中并关闭</div>
+        <button id="cancelModal" class="icon-btn" type="button">取消</button>
+      </div>
+    </div>
+  </div>
 
-    function collectTitleHistory(){
-      // 历史：把所有课程名 + 比赛名都作为建议（去重）
-      const set = new Set();
-      for(const it of state.items){
-        const t = (it.title||"").trim();
-        if(t) set.add(t);
-      }
-      return Array.from(set).slice(0, 50);
-    }
+<script>
+/**
+ * Life-Hub schedule.html（单文件版）
+ * 修复点：
+ * 1) “选择日期”一定弹出自定义日历浮窗（不依赖 input[type=date]，避免浏览器/样式导致不弹）
+ * 2) 日期按钮更醒目：颜色更强 + 放到编辑区更靠上 + 大卡片式 date-bar
+ *
+ * 数据存储：localStorage（完全离线）
+ */
 
-    function bindDetailEvents(it){
-      const titleInput = document.getElementById("titleInput");
-      const monthFrom = document.getElementById("monthFrom");
-      const monthTo = document.getElementById("monthTo");
-      const startTime = document.getElementById("startTime");
-      const endTime = document.getElementById("endTime");
-      const place = document.getElementById("place");
-      const note = document.getElementById("note");
-      const colorMode = document.getElementById("colorMode");
-      const pickedCount = document.getElementById("pickedCount");
-      const btnOpenCal = document.getElementById("btnOpenCal");
-      const btnDup = document.getElementById("btnDup");
-      const btnDone = document.getElementById("btnDone");
+(function(){
+  const LS_KEY = "lifehub_schedule_v3";
+  const LS_UI  = "lifehub_schedule_ui_v3";
 
-      function updateAndSave(){
-        it.title = titleInput ? titleInput.value : it.title;
-        it.monthFrom = monthFrom && monthFrom.value ? Number(monthFrom.value) : "";
-        it.monthTo = monthTo && monthTo.value ? Number(monthTo.value) : "";
-        it.startTime = startTime ? startTime.value : it.startTime;
-        it.endTime = endTime ? endTime.value : it.endTime;
-        it.place = place ? place.value : it.place;
-        it.note = note ? note.value : it.note;
-        it.colorMode = colorMode ? colorMode.value : it.colorMode;
+  // ====== DOM ======
+  const body = document.body;
 
-        // 基本纠错：结束时间早于开始时间时不强制拦（避免打断）
-        // 用户可自行调整
+  const modeCourse = document.getElementById("modeCourse");
+  const modeComp   = document.getElementById("modeComp");
 
-        save();
-        renderList();
-        // 同步标题
-        const areaTitle = $("detailArea").querySelector("div[style*='font-weight:1000']");
-        if(areaTitle) areaTitle.textContent = itemDisplayTitle(it);
-        if(pickedCount) pickedCount.textContent = `${(it.dates?.length||0)} 天`;
-      }
+  const saveDot  = document.getElementById("saveDot");
+  const saveText = document.getElementById("saveText");
 
-      [titleInput, monthFrom, monthTo, startTime, endTime, place, note, colorMode].forEach(el=>{
-        if(!el) return;
-        el.addEventListener("input", updateAndSave);
-        el.addEventListener("change", updateAndSave);
-      });
+  const addBtn = document.getElementById("addBtn");
+  const delBtn = document.getElementById("delBtn");
+  const dupBtn = document.getElementById("dupBtn");
+  const clearBtn = document.getElementById("clearBtn");
 
-      if(btnOpenCal){
-        btnOpenCal.onclick = ()=> openCalendar(it);
-      }
-      if(btnDup){
-        btnDup.onclick = ()=>{
-          const copy = JSON.parse(JSON.stringify(it));
-          copy.id = uid();
-          // 复制后标题略改，避免完全一样难分
-          // 比赛只存“某某”，课程存完整
-          if(copy.type === "course"){
-            copy.title = (copy.title || "课程") + "（复制）";
-          }else{
-            copy.title = (copy.title || "比赛") + "（复制）";
-          }
-          state.items.unshift(copy);
-          state.selectedId = copy.id;
-          save();
-          render();
-        };
-      }
-      if(btnDone){
-        btnDone.onclick = ()=>{
-          // 不跳转，不弹窗：仅给一个视觉确认（轻量）
-          btnDone.textContent = "已保存 ✓";
-          setTimeout(()=> btnDone.textContent = "完成", 900);
-        };
-      }
-    }
+  const search = document.getElementById("search");
+  const itemsEl = document.getElementById("items");
 
-    /***********************
-     * 日历（修改1 & 修改2）
-     ***********************/
-    let calCtx = {
-      item: null,
-      y: 0,
-      m: 0, // 1-12
-      workingDates: new Set()
-    };
+  const form = document.getElementById("form");
+  const empty = document.getElementById("empty");
 
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function ymd(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+  const editorTitle = document.getElementById("editorTitle");
+  const editorSub = document.getElementById("editorSub");
 
-    function openCalendar(item){
-      calCtx.item = item;
-      calCtx.workingDates = new Set(item.dates || []);
-      const now = new Date();
-      // 如果已有日期：默认跳到最近一个日期的月份
-      if(item.dates && item.dates.length){
-        const last = [...item.dates].sort().slice(-1)[0];
-        const [yy, mm] = last.split("-").map(Number);
-        calCtx.y = yy; calCtx.m = mm;
-      }else{
-        calCtx.y = now.getFullYear();
-        calCtx.m = now.getMonth()+1;
-      }
-      $("modalTitle").textContent = item.type === "match" ? "多选比赛日期" : "多选上课日期";
-      renderCalendar();
-      $("modalMask").classList.add("show");
-      $("modalMask").setAttribute("aria-hidden","false");
-    }
+  const monthSel = document.getElementById("monthSel");
+  const pickDateBtn = document.getElementById("pickDateBtn");
+  const todayBtn = document.getElementById("todayBtn");
 
-    function closeCalendar(){
-      $("modalMask").classList.remove("show");
-      $("modalMask").setAttribute("aria-hidden","true");
-    }
+  const dateBig = document.getElementById("dateBig");
+  const dateSmall = document.getElementById("dateSmall");
 
-    function renderCalendar(){
-      // 修改1：顶部显示年/月
-      $("ymLabel").textContent = `${calCtx.y} / ${pad2(calCtx.m)}`;
+  const nameLabel = document.getElementById("nameLabel");
+  const nameInput = document.getElementById("nameInput");
+  const nameHistory = document.getElementById("nameHistory");
 
-      const grid = $("calGrid");
-      grid.innerHTML = "";
+  const typeReadonly = document.getElementById("typeReadonly");
+  const locInput = document.getElementById("locInput");
+  const tagInput = document.getElementById("tagInput");
+  const noteInput = document.getElementById("noteInput");
 
-      const first = new Date(calCtx.y, calCtx.m - 1, 1);
-      const startDow = first.getDay(); // 0-6
-      const daysInMonth = new Date(calCtx.y, calCtx.m, 0).getDate();
-      const prevMonthDays = new Date(calCtx.y, calCtx.m - 1, 0).getDate();
+  const chipsEl = document.getElementById("chips");
 
-      // 42格（6行）
-      for(let i=0;i<42;i++){
-        const cell = document.createElement("div");
-        cell.className = "dayCell";
+  // Modal Calendar
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const closeModal = document.getElementById("closeModal");
+  const cancelModal = document.getElementById("cancelModal");
+  const prevMonth = document.getElementById("prevMonth");
+  const nextMonth = document.getElementById("nextMonth");
+  const goToday = document.getElementById("goToday");
+  const calMonthText = document.getElementById("calMonthText");
+  const calGrid = document.getElementById("calGrid");
+  const calHint = document.getElementById("calHint");
 
-        let dayNum, inMonth, y=calCtx.y, m=calCtx.m;
+  // ====== State ======
+  const TIME_CHIPS = ["早上", "上午", "中午", "下午", "傍晚", "晚上", "全天"];
+  let state = loadData();
+  let ui = loadUI();
 
-        if(i < startDow){
-          // 上月
-          inMonth = false;
-          dayNum = prevMonthDays - (startDow - 1 - i);
-          const prev = new Date(calCtx.y, calCtx.m - 2, dayNum);
-          y = prev.getFullYear();
-          m = prev.getMonth()+1;
-          cell.classList.add("muted");
-        }else if(i >= startDow + daysInMonth){
-          // 下月
-          inMonth = false;
-          dayNum = i - (startDow + daysInMonth) + 1;
-          const next = new Date(calCtx.y, calCtx.m, dayNum);
-          y = next.getFullYear();
-          m = next.getMonth()+1;
-          cell.classList.add("muted");
-        }else{
-          inMonth = true;
-          dayNum = i - startDow + 1;
-        }
+  let currentId = ui.currentId || null;
+  let currentMode = ui.mode || "course"; // "course" | "competition"
 
-        const key = ymd(y,m,dayNum);
+  // Calendar view month for modal
+  let calView = new Date(); // will be synced when opening modal
 
-        // 修改2：已选日期用色块高亮（蓝/红底白字），不再小点
-        if(calCtx.workingDates.has(key)){
-          const mode = (calCtx.item && calCtx.item.colorMode) ? calCtx.item.colorMode : "blue";
-          if(mode === "red") cell.classList.add("selectedRed");
-          else cell.classList.add("selectedBlue");
-        }
+  // ====== Init ======
+  renderMode();
+  buildMonthSelect();
+  buildChips();
+  renderList();
+  selectInitial();
+  wire();
 
-        const num = document.createElement("div");
-        num.className = "dayNum";
-        num.textContent = String(dayNum);
-        cell.appendChild(num);
+  // ====== Wire events ======
+  function wire(){
+    modeCourse.addEventListener("click", ()=>setMode("course"));
+    modeComp.addEventListener("click", ()=>setMode("competition"));
 
-        cell.onclick = ()=>{
-          // 点击任何格子都允许选择：会记录真实年月日（修改1）
-          if(calCtx.workingDates.has(key)){
-            calCtx.workingDates.delete(key);
-          }else{
-            calCtx.workingDates.add(key);
-          }
-          renderCalendar();
-        };
+    addBtn.addEventListener("click", addItem);
+    delBtn.addEventListener("click", deleteCurrent);
+    dupBtn.addEventListener("click", duplicateCurrent);
+    clearBtn.addEventListener("click", clearCurrentFields);
 
-        grid.appendChild(cell);
-      }
+    search.addEventListener("input", renderList);
 
-      $("calSummary").textContent = `已选 ${calCtx.workingDates.size} 天`;
-    }
-
-    $("modalClose").onclick = closeCalendar;
-    $("modalMask").addEventListener("click", (e)=>{
-      if(e.target === $("modalMask")) closeCalendar();
+    monthSel.addEventListener("change", ()=>{
+      if(!currentId) return;
+      const m = monthSel.value; // "YYYY-MM"
+      patchCurrent({ month: m });
+      // 如果当前日期不在该月，保持原日期但月份展示仍按 month 字段
+      renderEditor();
+      softSave();
     });
 
-    $("prevMonth").onclick = ()=>{
-      calCtx.m -= 1;
-      if(calCtx.m === 0){ calCtx.m = 12; calCtx.y -= 1; }
-      renderCalendar();
-    };
-    $("nextMonth").onclick = ()=>{
-      calCtx.m += 1;
-      if(calCtx.m === 13){ calCtx.m = 1; calCtx.y += 1; }
-      renderCalendar();
-    };
-    $("calConfirm").onclick = ()=>{
-      if(!calCtx.item) return closeCalendar();
-      calCtx.item.dates = Array.from(calCtx.workingDates).sort();
-      save();
-      closeCalendar();
-      render();
-    };
+    // === 关键：按钮 -> 弹出日历浮窗（修复 #1） ===
+    pickDateBtn.addEventListener("click", ()=>{
+      if(!currentId) return;
+      openCalendarModal();
+    });
 
-    /***********************
-     * 顶部按钮逻辑
-     ***********************/
-    $("tabCourse").onclick = ()=>{
-      state.view = "course";
-      // 若当前选中不是课程，则取消选中（避免删除误删）
-      const it = state.items.find(x=>x.id===state.selectedId);
-      if(it && it.type !== "course") state.selectedId = null;
-      save();
-      render();
-    };
-    $("tabMatch").onclick = ()=>{
-      state.view = "match";
-      const it = state.items.find(x=>x.id===state.selectedId);
-      if(it && it.type !== "match") state.selectedId = null;
-      save();
-      render();
-    };
+    todayBtn.addEventListener("click", ()=>{
+      if(!currentId) return;
+      const d = new Date();
+      applyDate(d);
+    });
 
-    function addNew(){
-      const now = new Date();
-      const item = {
-        id: uid(),
-        type: state.view,         // course/match
-        title: "",
-        monthFrom: "",
-        monthTo: "",
-        startTime: "12:00",
-        endTime: "13:00",
-        dates: [],
-        colorMode: "blue",
-        place: "",
-        note: ""
-      };
-      // 新建时：默认月份=当前月
-      item.monthFrom = now.getMonth()+1;
-      item.monthTo = now.getMonth()+1;
-
-      state.items.unshift(item);
-      state.selectedId = item.id;
-      save();
-      render();
-    }
-
-    $("btnAdd").onclick = addNew;
-
-    $("btnDelete").onclick = ()=>{
-      const it = state.items.find(x=>x.id===state.selectedId);
-      if(!it || it.type !== state.view) return;
-
-      const ok = confirm("确定删除这个条目吗？（无法撤销）");
-      if(!ok) return;
-
-      state.items = state.items.filter(x=>x.id !== it.id);
-      state.selectedId = null;
-      save();
-      render();
-    };
-
-    $("btnClear").onclick = ()=>{
-      const ok = confirm("确定清空本机所有数据吗？（只清浏览器本地，不影响 GitHub 文件）");
-      if(!ok) return;
-      localStorage.removeItem(STORAGE_KEY);
-      state.items = [];
-      state.selectedId = null;
-      save();
-      render();
-    };
-
-    $("btnExport").onclick = ()=>{
-      const data = JSON.stringify(state, null, 2);
-      const blob = new Blob([data], {type:"application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "lifehub_backup.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    };
-
-    /***********************
-     * render
-     ***********************/
-    function render(){
-      // tabs UI
-      $("tabCourse").classList.toggle("active", state.view==="course");
-      $("tabMatch").classList.toggle("active", state.view==="match");
-
+    // inputs autosave
+    const onInput = ()=>{ if(!currentId) return; softSave(); };
+    nameInput.addEventListener("input", ()=>{
+      if(!currentId) return;
+      patchCurrent({ name: nameInput.value.trim() });
+      updateNameHistory();
+      onInput();
+      renderList(); // 名称变动立即反映左侧
+    });
+    locInput.addEventListener("input", ()=>{
+      if(!currentId) return;
+      patchCurrent({ location: locInput.value });
+      onInput();
       renderList();
-      renderDetail();
+    });
+    tagInput.addEventListener("input", ()=>{
+      if(!currentId) return;
+      patchCurrent({ tag: tagInput.value });
+      onInput();
+      renderList();
+    });
+    noteInput.addEventListener("input", ()=>{
+      if(!currentId) return;
+      patchCurrent({ note: noteInput.value });
+      onInput();
+      renderList();
+    });
+
+    // Modal interactions
+    closeModal.addEventListener("click", closeCalendarModal);
+    cancelModal.addEventListener("click", closeCalendarModal);
+    modalBackdrop.addEventListener("click", (e)=>{
+      if(e.target === modalBackdrop) closeCalendarModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if(!modalBackdrop.classList.contains("show")) return;
+      if(e.key === "Escape") closeCalendarModal();
+    });
+
+    prevMonth.addEventListener("click", ()=>{
+      calView = new Date(calView.getFullYear(), calView.getMonth()-1, 1);
+      renderCalendar();
+    });
+    nextMonth.addEventListener("click", ()=>{
+      calView = new Date(calView.getFullYear(), calView.getMonth()+1, 1);
+      renderCalendar();
+    });
+    goToday.addEventListener("click", ()=>{
+      calView = new Date();
+      renderCalendar();
+    });
+  }
+
+  // ====== Mode ======
+  function setMode(m){
+    currentMode = m;
+    ui.mode = m;
+    saveUI();
+
+    renderMode();
+    renderList();
+    renderEditor();
+  }
+
+  function renderMode(){
+    const isCourse = currentMode === "course";
+    modeCourse.classList.toggle("active", isCourse);
+    modeCourse.setAttribute("aria-selected", String(isCourse));
+    modeComp.classList.toggle("active", !isCourse);
+    modeComp.setAttribute("aria-selected", String(!isCourse));
+
+    body.classList.toggle("mode-competition", !isCourse);
+
+    // editor labels
+    nameLabel.textContent = isCourse ? "课程名称" : "某某（输入）";
+    typeReadonly.value = isCourse ? "课程" : "比赛";
+    editorTitle.textContent = isCourse ? "课程编辑" : "比赛编辑";
+  }
+
+  // ====== Data helpers ======
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return { items: [] };
+      const obj = JSON.parse(raw);
+      if(!obj || !Array.isArray(obj.items)) return { items: [] };
+      return obj;
+    }catch(e){
+      return { items: [] };
+    }
+  }
+  function saveData(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+  function loadUI(){
+    try{
+      const raw = localStorage.getItem(LS_UI);
+      if(!raw) return {};
+      return JSON.parse(raw) || {};
+    }catch(e){ return {}; }
+  }
+  function saveUI(){
+    localStorage.setItem(LS_UI, JSON.stringify(ui));
+  }
+
+  function uid(){
+    return "i_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  function getCurrent(){
+    return state.items.find(x=>x.id===currentId) || null;
+  }
+
+  function patchCurrent(patch){
+    const idx = state.items.findIndex(x=>x.id===currentId);
+    if(idx < 0) return;
+    state.items[idx] = {
+      ...state.items[idx],
+      ...patch,
+      updatedAt: Date.now()
+    };
+  }
+
+  // ====== Build UI parts ======
+  function buildMonthSelect(){
+    monthSel.innerHTML = "";
+    // build 24 months centered around current month
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth()-6, 1);
+    for(let i=0;i<24;i++){
+      const d = new Date(start.getFullYear(), start.getMonth()+i, 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const v = `${y}-${m}`;
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = `${y}年${Number(m)}月`;
+      monthSel.appendChild(opt);
+    }
+  }
+
+  function buildChips(){
+    chipsEl.innerHTML = "";
+    TIME_CHIPS.forEach(t=>{
+      const el = document.createElement("div");
+      el.className = "chip";
+      el.textContent = t;
+      el.addEventListener("click", ()=>{
+        if(!currentId) return;
+        const cur = getCurrent();
+        const set = new Set(cur.times || []);
+        if(set.has(t)) set.delete(t); else set.add(t);
+        patchCurrent({ times: Array.from(set) });
+        renderEditor();
+        softSave();
+        renderList();
+      });
+      chipsEl.appendChild(el);
+    });
+  }
+
+  // ====== List render ======
+  function renderList(){
+    const q = (search.value || "").trim().toLowerCase();
+
+    // filter by currentMode type
+    const type = currentMode; // course/competition
+    let arr = state.items.filter(it=>it.type===type);
+
+    // search
+    if(q){
+      arr = arr.filter(it=>{
+        const blob = `${it.name||""} ${it.note||""} ${it.location||""} ${it.tag||""} ${it.date||""} ${it.month||""}`.toLowerCase();
+        return blob.includes(q);
+      });
     }
 
-    /***********************
-     * 启动
-     ***********************/
-    load();
+    // sort: date desc then updatedAt desc
+    arr.sort((a,b)=>{
+      const ad = a.date || "";
+      const bd = b.date || "";
+      if(ad !== bd) return bd.localeCompare(ad);
+      return (b.updatedAt||0) - (a.updatedAt||0);
+    });
 
-    // 如果第一次空：给两个示例（便于你验证界面）
-    if(state.items.length === 0){
-      const sampleCourse = {
-        id: uid(),
-        type: "course",
-        title: "篮球课",
-        monthFrom: 1,
-        monthTo: 3,
-        startTime: "12:00",
-        endTime: "13:00",
-        dates: [],
-        colorMode: "blue",
-        place: "",
-        note: ""
-      };
-      const sampleMatch = {
-        id: uid(),
-        type: "match",
-        title: "校队",
-        monthFrom: 1,
-        monthTo: 1,
-        startTime: "09:00",
-        endTime: "11:00",
-        dates: [],
-        colorMode: "red",
-        place: "",
-        note: ""
-      };
-      state.items = [sampleCourse, sampleMatch];
-      state.view = "course";
-      state.selectedId = sampleCourse.id;
-      save();
+    itemsEl.innerHTML = "";
+    if(arr.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "mini";
+      empty.style.padding = "8px 4px";
+      empty.style.color = "rgba(233,238,252,.70)";
+      empty.textContent = q ? "没有匹配的条目。" : "还没有条目，点“+ 新建”。";
+      itemsEl.appendChild(empty);
+      return;
     }
 
-    render();
-  </script>
+    arr.forEach(it=>{
+      const div = document.createElement("div");
+      div.className = "item" + (it.id===currentId ? " active" : "");
+      div.addEventListener("click", ()=>{
+        currentId = it.id;
+        ui.currentId = currentId;
+        saveUI();
+        renderList();
+        renderEditor();
+      });
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = (it.date ? it.date.slice(-2) : "—");
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const line1 = document.createElement("div");
+      line1.className = "line1";
+
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = it.name || (it.type==="competition" ? "（未命名比赛）" : "（未命名课程）");
+
+      const tag = document.createElement("div");
+      tag.className = "tag";
+      tag.textContent = it.month ? it.month : "未选月份";
+
+      line1.appendChild(name);
+      line1.appendChild(tag);
+
+      const line2 = document.createElement("div");
+      line2.className = "line2";
+      const t = (it.times && it.times.length) ? ` · ${it.times.join(" / ")}` : "";
+      const loc = it.location ? ` · ${it.location}` : "";
+      const dd = it.date ? `📅 ${formatDateCN(it.date)}` : "📅 未选日期";
+      line2.textContent = `${dd}${t}${loc}`;
+
+      meta.appendChild(line1);
+      meta.appendChild(line2);
+
+      div.appendChild(badge);
+      div.appendChild(meta);
+      itemsEl.appendChild(div);
+    });
+  }
+
+  // ====== Editor ======
+  function selectInitial(){
+    // If currentId invalid or not in current mode, try pick first item in mode
+    if(currentId && state.items.some(x=>x.id===currentId && x.type===currentMode)){
+      renderEditor();
+      return;
+    }
+    const first = state.items.find(x=>x.type===currentMode);
+    if(first){
+      currentId = first.id;
+      ui.currentId = currentId;
+      saveUI();
+      renderEditor();
+    }else{
+      currentId = null;
+      ui.currentId = null;
+      saveUI();
+      renderEditor();
+    }
+  }
+
+  function renderEditor(){
+    const it = getCurrent();
+    const show = !!it;
+
+    form.style.display = show ? "flex" : "none";
+    empty.style.display = show ? "none" : "block";
+    editorSub.textContent = show ? "修改会自动保存" : "选择一个条目开始编辑";
+
+    if(!show) return;
+
+    // mode-based readonly type
+    typeReadonly.value = (currentMode==="course") ? "课程" : "比赛";
+
+    // month
+    if(!it.month){
+      // default month = current month
+      const d = new Date();
+      const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      patchCurrent({ month: v });
+    }
+    monthSel.value = it.month;
+
+    // name/loc/tag/note
+    nameInput.value = it.name || "";
+    locInput.value = it.location || "";
+    tagInput.value = it.tag || "";
+    noteInput.value = it.note || "";
+
+    // date display
+    if(it.date){
+      dateBig.textContent = formatDateCN(it.date);
+      dateSmall.textContent = "点击右侧按钮可重新选择";
+    }else{
+      dateBig.textContent = "未选择日期";
+      dateSmall.textContent = "点击右侧“选择日期”，会弹出日历浮窗";
+    }
+
+    // chips selected
+    const set = new Set(it.times || []);
+    [...chipsEl.children].forEach(ch=>{
+      ch.classList.toggle("on", set.has(ch.textContent));
+    });
+
+    updateNameHistory();
+  }
+
+  function updateNameHistory(){
+    // build datalist from unique names in same mode
+    const names = Array.from(new Set(
+      state.items.filter(x=>x.type===currentMode).map(x=>(x.name||"").trim()).filter(Boolean)
+    )).slice(0,50);
+
+    nameHistory.innerHTML = "";
+    names.forEach(n=>{
+      const opt = document.createElement("option");
+      opt.value = n;
+      nameHistory.appendChild(opt);
+    });
+  }
+
+  // ====== Actions ======
+  function addItem(){
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+    const item = {
+      id: uid(),
+      type: currentMode,               // course / competition
+      month,
+      date: "",                        // YYYY-MM-DD
+      name: "",
+      times: [],
+      location: "",
+      tag: "",
+      note: "",
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    state.items.unshift(item);
+    currentId = item.id;
+    ui.currentId = currentId;
+    saveUI();
+    hardSave();
+    renderList();
+    renderEditor();
+  }
+
+  function deleteCurrent(){
+    if(!currentId) return;
+    const it = getCurrent();
+    if(!it) return;
+
+    const ok = confirm("确定删除这个条目吗？删除后无法恢复。");
+    if(!ok) return;
+
+    state.items = state.items.filter(x=>x.id!==currentId);
+    currentId = null;
+    ui.currentId = null;
+    saveUI();
+    hardSave();
+    renderList();
+    selectInitial();
+  }
+
+  function duplicateCurrent(){
+    const it = getCurrent();
+    if(!it) return;
+    const copy = JSON.parse(JSON.stringify(it));
+    copy.id = uid();
+    copy.createdAt = Date.now();
+    copy.updatedAt = Date.now();
+    // 复制后放到最前并选中
+    state.items.unshift(copy);
+    currentId = copy.id;
+    ui.currentId = currentId;
+    saveUI();
+    hardSave();
+    renderList();
+    renderEditor();
+  }
+
+  function clearCurrentFields(){
+    const it = getCurrent();
+    if(!it) return;
+    const ok = confirm("清空本条填写（名称/时间点/地点/标签/备注/日期）？");
+    if(!ok) return;
+
+    patchCurrent({
+      date:"",
+      name:"",
+      times:[],
+      location:"",
+      tag:"",
+      note:""
+    });
+    hardSave();
+    renderList();
+    renderEditor();
+  }
+
+  // ====== Save status ======
+  let saveTimer = null;
+
+  function softSave(){
+    // show pending
+    setSaving(true);
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      hardSave();
+    }, 300);
+  }
+
+  function hardSave(){
+    saveData();
+    setSaving(false);
+  }
+
+  function setSaving(isSaving){
+    if(isSaving){
+      saveDot.classList.remove("ok");
+      saveDot.classList.add("warn");
+      saveText.textContent = "保存中…";
+    }else{
+      saveDot.classList.remove("warn");
+      saveDot.classList.add("ok");
+      saveText.textContent = "已保存";
+    }
+  }
+
+  // ====== Calendar modal (Fix #1) ======
+  function openCalendarModal(){
+    const it = getCurrent();
+    if(!it) return;
+
+    // Sync calView to item.date or item.month or today
+    if(it.date){
+      calView = parseYMD(it.date) || new Date();
+    }else if(it.month){
+      const parts = it.month.split("-");
+      calView = new Date(Number(parts[0]), Number(parts[1])-1, 1);
+    }else{
+      calView = new Date();
+    }
+
+    modalBackdrop.classList.add("show");
+    modalBackdrop.setAttribute("aria-hidden","false");
+    renderCalendar();
+  }
+
+  function closeCalendarModal(){
+    modalBackdrop.classList.remove("show");
+    modalBackdrop.setAttribute("aria-hidden","true");
+  }
+
+  function renderCalendar(){
+    const y = calView.getFullYear();
+    const m = calView.getMonth(); // 0-11
+
+    calMonthText.textContent = `${y}年${m+1}月`;
+
+    // Build grid for month
+    const first = new Date(y, m, 1);
+    const firstDay = first.getDay(); // 0 Sun
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    // selection for current item
+    const it = getCurrent();
+    const sel = it && it.date ? it.date : "";
+    const selD = sel ? parseYMD(sel) : null;
+
+    // today
+    const today = new Date();
+    const tY = today.getFullYear(), tM = today.getMonth(), tD = today.getDate();
+
+    calGrid.innerHTML = "";
+
+    // leading blanks
+    for(let i=0;i<firstDay;i++){
+      const d = document.createElement("div");
+      d.className = "day mute";
+      d.textContent = "";
+      calGrid.appendChild(d);
+    }
+
+    for(let dNum=1; dNum<=daysInMonth; dNum++){
+      const cell = document.createElement("div");
+      cell.className = "day";
+      cell.textContent = dNum;
+
+      const isToday = (y===tY && m===tM && dNum===tD);
+      if(isToday) cell.classList.add("today");
+
+      const isSel = selD && (selD.getFullYear()===y && selD.getMonth()===m && selD.getDate()===dNum);
+      if(isSel) cell.classList.add("sel");
+
+      cell.addEventListener("click", ()=>{
+        // click date => apply and close
+        const chosen = new Date(y, m, dNum);
+        applyDate(chosen);
+        closeCalendarModal();
+      });
+
+      calGrid.appendChild(cell);
+    }
+
+    const hintMode = (currentMode==="course") ? "课程" : "比赛";
+    calHint.textContent = `点击某一天即可选中并关闭（当前：${hintMode}）`;
+  }
+
+  function applyDate(dateObj){
+    if(!currentId) return;
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth()+1).padStart(2,"0");
+    const d = String(dateObj.getDate()).padStart(2,"0");
+    const ymd = `${y}-${m}-${d}`;
+    const month = `${y}-${m}`;
+
+    patchCurrent({ date: ymd, month });
+
+    // sync month select
+    monthSel.value = month;
+    renderEditor();
+    renderList();
+    softSave();
+  }
+
+  // ====== Utils ======
+  function parseYMD(ymd){
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+    if(!m) return null;
+    const y = Number(m[1]);
+    const mo = Number(m[2]) - 1;
+    const d = Number(m[3]);
+    const dt = new Date(y, mo, d);
+    if(dt.getFullYear()!==y || dt.getMonth()!==mo || dt.getDate()!==d) return null;
+    return dt;
+  }
+
+  function formatDateCN(ymd){
+    const dt = parseYMD(ymd);
+    if(!dt) return ymd;
+    const y = dt.getFullYear();
+    const m = dt.getMonth()+1;
+    const d = dt.getDate();
+    const w = ["日","一","二","三","四","五","六"][dt.getDay()];
+    return `${y}年${m}月${d}日（周${w}）`;
+  }
+
+})();
+</script>
 </body>
 </html>
